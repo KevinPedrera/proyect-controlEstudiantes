@@ -1,0 +1,25 @@
+<main>
+  <p class="eyebrow">Fase 1 · Conexión inicial</p>
+  <h1>Control Estudiantil</h1>
+  <p>La aplicación está funcionando. Comprueba su conexión con el servidor.</p>
+  <dl aria-live="polite">
+    <div>
+      <dt>Servidor</dt>
+      <dd data-testid="health" [class.ok]="health() === 'connected'">{{ healthLabel() }}</dd>
+    </div>
+    <div>
+      <dt>Tiempo real</dt>
+      <dd data-testid="websocket" [class.ok]="socket.state() === 'connected'">{{ socketLabel() }}</dd>
+    </div>
+  </dl>
+  <div class="actions">
+    <button type="button" (click)="checkConnections()" [disabled]="health() === 'checking'">
+      Comprobar conexión
+    </button>
+    <button type="button" class="secondary" (click)="socket.disconnect()"
+      [disabled]="socket.state() === 'disconnected'">
+      Desconectar tiempo real
+    </button>
+  </div>
+  <p class="note">Esta versión solo permite verificar la conexión. Las funciones del colegio se incorporarán en las siguientes fases.</p>
+</main>

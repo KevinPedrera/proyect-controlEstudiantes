@@ -1,0 +1,87 @@
+# SQLite local y archivos auxiliares
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Excel institucional y datos reales (no versionar importaciones)
+*.xls
+*.xlsx
+*.xlsm
+*.xlsb
+*.csv
+*.tsv
+data/
+datos/
+imports/
+exports/
+backups/
+
+# Secretos y configuración local; ejemplos sin secretos sí se versionan
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets/
+
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.pytest_tmp/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Node y Angular
+node_modules/
+.angular/
+dist/
+build/
+out-tsc/
+coverage/
+*.tsbuildinfo
+
+# Cachés, logs y temporales
+.cache/
+.temp/
+.tmp/
+tmp/
+temp/
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# IDE y sistema operativo
+.idea/
+.vscode/
+*.suo
+*.user
+.DS_Store
+Thumbs.db
+Desktop.ini

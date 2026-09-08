@@ -1,0 +1,27 @@
+# Control Estudiantil — Fase 1 autorizada. No iniciar Fase 2.
+# Referencia: https://learn.chatgpt.com/docs/config-file/config-reference
+# Configuraciones de rol: TOML relativo a este archivo.
+# Reglas del proyecto: AGENTS.md y docs/. No usar la propiedad reservada instructions.
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
+model_verbosity = "medium"
+
+[agents]
+# Máximo de agentes secundarios; el coordinador no cuenta en este límite.
+max_threads = 2
+
+[agents.backend_specialist]
+description = "FastAPI, SQLAlchemy, Alembic, SQLite, reglas de negocio, WebSocket e integridad."
+config_file = "agents/backend_specialist.toml"
+
+[agents.frontend_angular]
+description = "Angular, interfaz general, consumo de API, reconexión y cronómetros visuales."
+config_file = "agents/frontend_angular.toml"
+
+[agents.product_ux]
+description = "Revisión de claridad y facilidad de uso, sin modificar archivos ni ampliar alcance."
+config_file = "agents/product_ux.toml"
+
+[agents.qa_reviewer]
+description = "Revisión de calidad, concurrencia, regresiones y cumplimiento del MVP, sin modificar archivos."
+config_file = "agents/qa_reviewer.toml"
