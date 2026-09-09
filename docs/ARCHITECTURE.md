@@ -147,7 +147,7 @@ control-estudiantil/
 └── frontend/
 ```
 
-Sobre el esqueleto técnico de Fase 1 se incorpora Department en Fase 2. El frontend consulta GET /api/departments, modifica disponibilidad mediante PUT /api/departments/{department_id}/availability y vuelve a consultar tras un aviso departments_changed o una reconexión WebSocket. No existen otras entidades implementadas de dominio.
+Sobre el esqueleto técnico de Fase 1 se incorpora Department en Fase 2. El frontend consulta GET /api/departments, modifica disponibilidad mediante PUT /api/departments/{department_id}/availability y vuelve a consultar tras un aviso departments_changed o una reconexión WebSocket. Fase 3A añade el esquema de estudiantes/institución/periodos/contactos/ubicaciones y borradores de importación; no hay escrituras operativas desde preview.
 
 ---
 
@@ -172,3 +172,16 @@ Toda decisión de negocio debe implementarse únicamente en el backend.
 El frontend nunca contendrá reglas de negocio.
 
 La simplicidad tiene prioridad sobre la cantidad de funcionalidades. El flujo del MVP se construye incrementalmente según el roadmap; no se incorporan funcionalidades fuera de ese alcance antes de validar el MVP.
+
+
+## Importación 3A
+
+Parser sin persistencia → comparación en snapshot de lectura → escritura de borrador.
+Servicios centrales de candidatos independientes del parser, reutilizables para futura alta manual.
+El hash del snapshot registra la base comparada; no se implementa confirmación ni resolución.
+La lectura XLSX se ejecuta fuera del event loop y fuera de una transacción de escritura.
+El binario se cierra antes del análisis; no se guarda en directorios del proyecto.
+La tarea de limpieza vive en el lifespan de FastAPI, se cancela al cerrar y no usa
+servicios externos. Se limpia al arrancar, cada minuto y al consultar importaciones.
+No se añaden eventos WebSocket de importación: el borrador se recupera por HTTP.
+Se mantienen sin cambios los mensajes y la recuperación de departamentos.

@@ -25,6 +25,7 @@ def create_database_engine(settings: Settings) -> Engine:
 
     engine = create_engine(
         settings.database_url,
+        hide_parameters=True,
         connect_args={"check_same_thread": False, "timeout": 5},
     )
 
@@ -34,6 +35,7 @@ def create_database_engine(settings: Settings) -> Engine:
         dbapi_connection.isolation_level = None  # type: ignore[attr-defined]
         cursor = dbapi_connection.cursor()  # type: ignore[attr-defined]
         cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA secure_delete=ON")
         cursor.close()
 
     @event.listens_for(engine, "begin")

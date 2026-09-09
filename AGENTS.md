@@ -31,7 +31,7 @@ Si existe contradicción entre el código y la documentación, el agente debe in
 
 No implementar funcionalidades que no pertenezcan a la fase actual.
 
-El desarrollo debe seguir el orden establecido en docs/ROADMAP.md. La fase autorizada es Fase 2: departamentos y disponibilidad en tiempo real sobre el esqueleto de Fase 1. No iniciar Fase 3 ni implementar estudiantes, movimientos o funcionalidades posteriores. La autorización específica del usuario prevalece sobre las referencias históricas de fase en las configuraciones de agentes.
+El desarrollo debe seguir el orden establecido en docs/ROADMAP.md. La fase autorizada es exclusivamente Fase 3A: esquema, lectura, validación, comparación y preview de importaciones. Fase 2 está validada en PC/celular LAN. No implementar Fase 3B (resolución/aplicación), alta o edición manual, búsqueda de Fase 4 ni movimientos. El preview solo escribe ImportBatch/ImportRow y nunca altera datos operativos. La autorización específica del usuario prevalece sobre las referencias históricas de fase en las configuraciones de agentes.
 
 Un agente no debe adelantarse a fases futuras.
 
@@ -245,7 +245,7 @@ Durante el MVP no implementar:
 - PostgreSQL;
 - sanciones;
 - fichas completas;
-- representantes;
+- fichas de representantes (su almacenamiento y preview sí pertenecen a Fase 3A);
 - expedientes médicos;
 - funcionalidades académicas.
 

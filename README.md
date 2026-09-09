@@ -91,7 +91,7 @@ Cada nueva funcionalidad deberá aportar valor al flujo diario del colegio antes
 
 # Estado
 
-Fase 2 — departamentos y disponibilidad en tiempo real, implementada y pendiente de validación manual en dos dispositivos. Fase 1 aprobada. Fase 3 no iniciada.
+Fase 2 completada y validada manualmente en PC/celular LAN. Fase 3A implementada, con QA sin bloqueos y pendiente de validación manual: esquema, lectura y preview. Fase 3B y Fase 4 no iniciadas.
 
 ## Ejecución local
 
@@ -145,16 +145,16 @@ No hay una tarea de lint ni pruebas e2e configuradas. Las pruebas del backend us
 - `PUT /api/departments/{department_id}/availability`: cuerpo con únicamente availability, DISPONIBLE o NO_DISPONIBLE. Devuelve el departamento confirmado. Es idempotente; un valor ya establecido no emite avisos.
 - `/ws`: aviso `departments_changed` después de confirmar un cambio real. La API es la fuente oficial del estado.
 
-No hay CRUD general, activación/desactivación, estudiantes ni movimientos. Un departamento inactivo responde 409 al intentar modificarlo; uno inexistente, 404; una entrada inválida, 422.
+No hay CRUD general, activación/desactivación ni movimientos. El esquema de estudiantes existe desde 3A, sin endpoints operativos. Un departamento inactivo responde 409 al intentar modificarlo; uno inexistente, 404; una entrada inválida, 422.
 
-## Validación manual pendiente de Fase 2
+## Validación de Fase 2
 
 Validación técnica de cierre: 43 pruebas de backend y 12 de frontend aprobadas;
 `pip check`, compilación Python y build de producción correctos. Alembic verificó
 `upgrade`, `current`, `heads`, `check` y el ciclo `downgrade`/`upgrade` únicamente
 en bases desechables. La integración local con dos clientes comprobó GET, PUT,
 idempotencia, avisos WebSocket, persistencia tras reiniciar y recuperación automática.
-Estas comprobaciones no sustituyen la siguiente prueba manual en la red del colegio.
+El usuario confirmó además la validación manual en PC y celular dentro de la LAN. Los pasos siguientes se conservan para regresión.
 
 En el servidor, iniciar FastAPI en `127.0.0.1:8000`. Para permitir la prueba desde otros dispositivos, ejecutar desde `frontend/`:
 
@@ -171,7 +171,7 @@ Desde dos dispositivos de la misma red, abrir `http://IP-DEL-SERVIDOR:4200`. Sus
 5. Reiniciar FastAPI y comprobar que conserva los cambios y los clientes se recuperan.
 6. Verificar lectura y botones en PC y celular.
 
-No se han abierto puertos ni creado reglas permanentes de firewall automáticamente. Si Windows bloquea el acceso, revisar el permiso de red privada del servidor de desarrollo antes de la prueba. La validación manual debe registrarse antes de aprobar completamente Fase 2.
+No se han abierto puertos ni creado reglas permanentes de firewall automáticamente. Si Windows bloquea el acceso, revisar el permiso de red privada del servidor de desarrollo antes de la prueba. La validación manual de Fase 2 ya fue confirmada.
 
 ## Documentación oficial
 
@@ -183,3 +183,23 @@ No se han abierto puertos ni creado reglas permanentes de firewall automáticame
 - [Reglas de agentes](AGENTS.md)
 
 La configuración del proyecto está en `.codex/config.toml`; las configuraciones de sus cuatro agentes están en `.codex/agents/`.
+
+
+## Fase 3A: previsualización de importaciones
+
+Aplicar `alembic upgrade head` antes de iniciar la versión actual. La revisión
+0002_import_preview añade siete tablas sin cambiar datos de departamentos.
+No crea institución, periodo, estudiantes ni contactos reales.
+
+La sección de importación permite seleccionar XLSX (máximo 5 MB), declarar
+PADRON_COMPLETO o SUBCONJUNTO y generar un preview. No existe botón de aplicación.
+Se muestra institución/año como propuesta, resumen, advertencias, candidatos,
+diferencias y páginas de diez filas. El ID permite recuperar el borrador durante 24 horas.
+Los detalles personales solo aparecen dentro de la revisión de importación.
+
+Contrato, límites y limpieza: [Preview de Fase 3A](docs/IMPORT_PREVIEW.md).
+
+Validación manual pendiente de 3A: generar un preview desde PC y celular,
+recuperarlo por ID, navegar filas y comprobar que departamentos sigue sincronizando.
+Comprobar el mensaje de no aplicación y que no hay controles de Fase 3B.
+El Excel real se valida solo localmente y nunca se copia al repositorio.

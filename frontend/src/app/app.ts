@@ -5,10 +5,11 @@ import { ApiService } from './core/api.service';
 import { DepartmentGroup } from './core/department.model';
 import { DepartmentsService } from './core/departments.service';
 import { SocketService } from './core/socket.service';
+import { ImportPreview } from './imports/import-preview';
 
 type HealthState = 'checking' | 'connected' | 'error';
 
-@Component({ selector: 'app-root', templateUrl: './app.html', styleUrl: './app.css' })
+@Component({ selector: 'app-root', imports: [ImportPreview], templateUrl: './app.html', styleUrl: './app.css' })
 export class App implements OnInit {
   private readonly api = inject(ApiService);
   private readonly destroyRef = inject(DestroyRef);

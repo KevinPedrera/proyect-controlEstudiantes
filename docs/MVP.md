@@ -191,7 +191,7 @@ La importación desde Excel es controlada: se revisan datos incompletos, inváli
 - Pantalla de historial.
 - Información disciplinaria.
 - Observaciones.
-- Información del representante.
+- Ficha completa del representante; almacenamiento y preview sí se incluyen desde 3A.
 - Carnet digital.
 - Integración con otros sistemas.
 
@@ -223,3 +223,13 @@ Una vez validado el MVP se evaluará incorporar:
 - Pantalla de historial del estudiante.
 - Integración con otros sistemas institucionales.
 - Aplicación móvil.
+
+
+## Alcance aprobado de importación
+
+Fase 3A incorpora esquema y preview de documento opcional, cuatro componentes de
+nombre, curso/paralelo por periodo con versiones, representante/padre/madre y emergencias.
+Institution proviene del backend y existe un año activo explícito; el preview solo los propone.
+Fase 3B aplicará cambios únicamente con autorización posterior. Alta/edición manual y búsqueda
+no pertenecen a 3A. La vista operativa futura muestra solo nombres/apellidos/curso/paralelo.
+Ver [contrato de preview](IMPORT_PREVIEW.md). Fase 2 validada manualmente en PC/celular LAN.

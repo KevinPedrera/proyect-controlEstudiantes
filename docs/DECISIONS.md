@@ -219,3 +219,54 @@ Conservar el historial operativo sin duplicar persistencia. WebSocket no necesit
 ## Regla general
 
 Toda nueva decisión importante deberá registrarse en este documento antes de implementarse en el código.
+
+
+## DEC-028 — Fase 3A autorizada
+
+Fase 2 está completada y validada por el usuario en PC/celular LAN, base 882af13.
+Fase 3 se divide en 3A (esquema, parser, validación, comparación y preview) y
+3B (resoluciones y aplicación), con revisión humana intermedia. Solo 3A está autorizada.
+Se incorporan Institution, AcademicPeriod, Student, StudentAcademicPlacement,
+StudentContact, ImportBatch e ImportRow. El preview nunca crea/modifica datos operativos.
+Student usa ID interno y documento opcional. Mínimos: nombre, apellido, curso y paralelo.
+Procedencia de importación opcional para futuras altas manuales. No hay alta/edición manual ahora.
+Ubicaciones académicas versionadas: máximo una abierta por estudiante/año; no inventar fechas efectivas.
+Contactos por función, múltiples emergencias, sin Person global. Año activo explícito, institución única.
+Guardar documentos/contactos no autoriza mostrar fichas; el panel operativo conserva información básica.
+
+## DEC-029 — Perfil y preview
+
+Perfil idukay_listado_filtrado_v1: encabezados agrupados de estudiante, representante,
+padre, madre y dos bloques de emergencia. Reconocimiento por encabezados y combinaciones,
+no coordenadas rígidas. Referencia inspeccionada: una hoja, 863 filas, institución y año en bloque superior.
+Vacíos a NULL, trim; guion literal conservado con advertencia. UI: Sin registrar.
+Documento/nombres proponen candidatos; nunca fusionan. Vacíos no proponen borrar valores existentes.
+Categorías excluyentes NUEVO, SIN_CAMBIOS, ACTUALIZACION, REQUIERE_REVISION;
+etiquetas de cambio y advertencias separadas. PADRON_COMPLETO declarado permite ausencias;
+SUBCONJUNTO no. Ambigüedades impiden conclusiones de ausencia. Ausencia no altera datos.
+Solo POST preview y GET lote/rows/absences paginados; no confirm ni resolutions.
+
+## DEC-030 — Privacidad y borradores
+
+TTL aprobado: 24 horas desde creación. Expirados no recuperables (410); se eliminan
+filas, propuestas, candidatos y ausencias personales; se conserva una lápida mínima del lote.
+Limpieza al acceder a importaciones y periódicamente cada minuto mientras FastAPI está activo;
+al reiniciar se limpia antes de servir. Sin servidor activo, limpieza en el siguiente arranque.
+No conservar Excel binario; cerrar carga temporal ante éxito/error. No logs con documentos/teléfonos.
+Las pruebas usan libros sintéticos. El Excel real solo se lee localmente y no se copia ni versiona.
+openpyxl y python-multipart son dependencias autorizadas para XLSX y multipart. No pandas.
+Se conserva evidencia recibida y procedencia; la BASE importada aceptada se registrará en 3B,
+no se actualiza al generar preview. No login/roles, búsqueda, movimientos ni nuevas funciones futuras.
+
+## DEC-031 — Calidad separada de clasificación de importación
+
+Corrección autorizada tras validación manual de 3A: warnings de calidad no determinan
+la categoría. Un guion literal en campo opcional se conserva y advierte, sin convertirlo
+a NULL ni elevar por sí solo un registro a REQUIERE_REVISION. Lo mismo aplica a un
+contacto incompleto no bloqueante. La categoría depende de razones bloqueantes explícitas:
+mínimos inválidos, institución incompatible, duplicados, correspondencia ambigua/conflictiva
+o varias filas hacia un mismo Student. Documento opcional no elegible sin coincidencias
+es advertencia; una correspondencia no segura sigue requiriendo resolución humana.
+El payload separa warnings de blocking_review_reasons; conflicts permanece como alias
+compatible para clientes anteriores. Los borradores existentes conservan su snapshot;
+la clasificación corregida se obtiene generando una nueva previsualización.

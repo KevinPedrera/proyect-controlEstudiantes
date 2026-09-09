@@ -3,3 +3,5 @@ uvicorn==0.42.0
 SQLAlchemy==2.0.48
 alembic==1.18.4
 websockets==16.0
+openpyxl==3.1.5
+python-multipart==0.0.22

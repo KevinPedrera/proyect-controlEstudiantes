@@ -11,7 +11,7 @@ def test_upgrade_downgrade_upgrade_and_check(tmp_path, monkeypatch):
     url = f"sqlite:///{(tmp_path / 'migration.db').as_posix()}"
     monkeypatch.setenv("CONTROL_ESTUDIANTIL_DATABASE_URL", url)
     config = Config("alembic.ini")
-    command.upgrade(config, "head")
+    command.upgrade(config, "0001_departments")
     engine = create_database_engine(Settings(url, ()))
     with engine.begin() as connection:
         assert connection.scalar(text("SELECT count(*) FROM departments")) == 8
@@ -26,7 +26,7 @@ def test_upgrade_downgrade_upgrade_and_check(tmp_path, monkeypatch):
     command.downgrade(config, "base")
     assert inspect(engine).get_table_names() == ["alembic_version"]
     command.upgrade(config, "head")
-    assert set(inspect(engine).get_table_names()) == {"alembic_version", "departments"}
+    assert set(inspect(engine).get_table_names()) == {"alembic_version", "departments", "institution", "academic_periods", "students", "student_academic_placements", "student_contacts", "import_batches", "import_rows"}
     command.check(config)
     engine.dispose()
 

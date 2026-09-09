@@ -22,6 +22,7 @@
 data/
 datos/
 imports/
+!frontend/src/app/imports/
 exports/
 backups/
 

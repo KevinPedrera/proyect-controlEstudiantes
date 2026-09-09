@@ -11,7 +11,7 @@ Una fase NO debe comenzar hasta que la anterior funcione correctamente.
 Codex no debe adelantarse a fases posteriores ni implementar
 funcionalidades que no estén contempladas en el MVP.
 
-Estado actual: Fase 2 — departamentos y disponibilidad en tiempo real, implementada y pendiente de validación manual en dos dispositivos. Fase 1 completada y validada. Fase 3 no iniciada.
+Estado actual: Fase 2 completada y validada en PC/celular LAN. Fase 3A implementada: esquema y preview, con QA sin bloqueos y pendiente de validación manual. Fase 3B y Fase 4 no iniciadas.
 
 Las rutas documentales mencionadas en este archivo se expresan desde la raíz del proyecto.
 
@@ -159,45 +159,27 @@ manualmente la página.
 
 ---
 
-# FASE 3 — Importación de estudiantes
+# FASE 3A — Esquema y previsualización
 
-## Objetivo
+Fase autorizada: Institution, AcademicPeriod, Student, StudentAcademicPlacement,
+StudentContact, ImportBatch e ImportRow; parser idukay_listado_filtrado_v1,
+validación, candidatos, comparación, preview persistido e interfaz mínima.
+Solo ImportBatch/ImportRow reciben datos. TTL 24 horas con limpieza de contenido personal.
+NULL interno, guiones conservados con advertencia, sin fusiones automáticas.
+Los vacíos entrantes no borran valores existentes. PADRON_COMPLETO permite ausencias
+solo si la identidad es concluyente; SUBCONJUNTO no calcula ausencias.
+Documento opcional; mínimos nombre/apellido/curso/paralelo. Contactos por función;
+ubicaciones académicas versionadas y año activo explícito. Sin fechas inventadas.
 
-Importar los estudiantes desde el Excel institucional a SQLite.
+Cierre: perfil real reconoce 863 filas, institución/año y dos bloques de emergencia;
+pruebas de parser, comparación, no destrucción, limpieza y regresión aprobadas;
+build/migraciones/QA correctos. Revisión humana antes de 3B.
 
-El Excel será una fuente de importación.
+# FASE 3B — Resolución y aplicación (NO AUTORIZADA)
 
-NO será utilizado directamente durante el funcionamiento normal
-del sistema.
-
-## Datos necesarios para el MVP
-
-Importar únicamente los campos necesarios para obtener:
-
-- nombres;
-- apellidos;
-- curso;
-- paralelo.
-
-También se generará un ID interno.
-
-## Validaciones
-
-La importación debe detectar y manejar:
-
-- filas vacías;
-- información incompleta;
-- registros inválidos;
-- posibles duplicados.
-
-No modificar automáticamente el archivo Excel original.
-
-La importación será controlada. No fusionar homónimos automáticamente ni asumir que nombre, curso y paralelo identifican unívocamente a una persona. Revisar posibles duplicados y correspondencias antes de cualquier reimportación; no implementar sincronización automática con Excel.
-
-## Criterio de finalización
-
-Los estudiantes pueden importarse y posteriormente consultarse
-desde la base de datos.
+Corresponderán aquí resolución de candidatos y confirmación transaccional explícita.
+No se implementan en 3A. Tampoco se implementan alta/edición manual ni búsqueda.
+La futura BASE importada aceptada debe mantenerse fuera de borradores temporales.
 
 ---
 
@@ -220,6 +202,8 @@ Curso — Paralelo
 Esto permitirá diferenciar estudiantes con nombres iguales.
 
 ## Criterio de finalización
+
+Búsqueda incremental en backend, con hasta cinco coincidencias visibles; no descargar todo el alumnado. La comparación para búsqueda puede ignorar tildes, sin usarla para decidir identidad.
 
 El personal puede escribir una parte del nombre o apellido
 y encontrar rápidamente al estudiante correcto.
@@ -648,7 +632,7 @@ como:
 - PDF;
 - fichas ampliadas de estudiantes;
 - sanciones;
-- representantes;
+- fichas de representantes (almacenamiento y preview ya incluidos en 3A);
 - notificaciones externas (los avisos WebSocket pertenecen al MVP);
 - despliegue fuera de la red local;
 - PostgreSQL;

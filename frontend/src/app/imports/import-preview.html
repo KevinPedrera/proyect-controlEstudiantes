@@ -1,0 +1,65 @@
+<section aria-labelledby="import-title" class="import-area">
+  <h2 id="import-title">Previsualizar listado de estudiantes</h2>
+  <p class="notice"><strong>Previsualización: todavía no se han aplicado cambios.</strong> Esta etapa solo permite revisar el archivo.</p>
+  <div class="controls">
+    <label>Archivo iDukay (.xlsx, máximo 5 MB)<input type="file" accept=".xlsx" (change)="selectFile($event)" [disabled]="loading()"></label>
+    <label>Contenido del archivo
+      <select (change)="selectScope($event)" [disabled]="loading()">
+        <option value="">Selecciona el alcance</option><option value="PADRON_COMPLETO">Padrón completo de este año lectivo</option><option value="SUBCONJUNTO">Subconjunto</option>
+      </select>
+    </label>
+    <button type="button" (click)="create()" [disabled]="!file || !scope || loading()">Generar previsualización</button>
+  </div>
+  <p>El archivo original no se modifica. Los borradores vencen a las 24 horas.</p>
+  <details><summary>Recuperar una previsualización</summary>
+    <label>ID de previsualización<input type="text" [value]="recoveryId" (input)="recoveryChanged($event)" [disabled]="loading()" maxlength="36"></label>
+    <button type="button" (click)="recover()" [disabled]="!recoveryId || loading()">Recuperar</button>
+  </details>
+  @if (loading()) { <p role="status">Procesando la consulta…</p> }
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (preview(); as batch) {
+    <h3>{{ batch.institution }}</h3><p>{{ batch.academic_period }} · {{ batch.scope === 'PADRON_COMPLETO' ? 'Padrón completo declarado' : 'Subconjunto' }}</p>
+    <label>ID para recuperar este borrador<input readonly [value]="batch.id"></label>
+    <p>Vence: {{ batch.expires_at | date:'dd/MM/yyyy HH:mm' }}. {{ batch.total }} filas interpretadas.</p>
+    <ul class="counts">@for (category of categories; track category) { <li>{{ label(category) }}: <strong>{{ batch.counts[category] }}</strong></li> }</ul>
+    <p>Advertencias de calidad: {{ batch.quality_warning_count }}</p>
+    @if (batch.rows_with_warnings !== undefined) { <p>Registros con advertencias: {{ batch.rows_with_warnings }} · Registros con razones bloqueantes: {{ batch.rows_with_blocking_reasons }}</p> }
+    @for (warning of batch.warnings; track $index) { <p class="notice">{{ warning }}</p> }
+    <div class="controls">
+      <button type="button" (click)="switchMode('rows')" [disabled]="loading()" [attr.aria-pressed]="mode() === 'rows'">Filas del archivo</button>
+      @if (batch.absences_calculated) { <button type="button" (click)="switchMode('absences')" [disabled]="loading()" [attr.aria-pressed]="mode() === 'absences'">No encontrados: {{ batch.absence_count }}</button> }
+    </div>
+    @if (mode() === 'rows') {
+      @for (row of rows(); track row.row_number) {
+        <article>
+          <h3>{{ fullName(row.student) || 'Registro incompleto' }}</h3>
+          <p>{{ value(row.student['course']) }} · {{ value(row.student['parallel']) }}</p>
+          <p><strong>{{ label(row.category) }}</strong> · Hoja {{ row.sheet }}, fila {{ row.row_number }}</p>
+          @for (tag of row.tags; track tag) { <span class="tag">{{ label(tag) }}</span> }
+          @if (row.warnings.length) { <h4>Advertencias de calidad</h4> }
+          @for (warning of row.warnings; track $index) { <p class="notice">{{ warning.message }} ({{ warning.cell }})</p> }
+          @for (error of row.errors; track $index) { <p class="error">{{ error }}</p> }
+          @if ((row.blocking_review_reasons ?? row.conflicts).length) { <h4>Razones que requieren una decisión</h4> }
+          @for (conflict of row.blocking_review_reasons ?? row.conflicts; track $index) { <p class="error">{{ conflict }}</p> }
+          @if (row.candidates.length) {
+            <h4>Posibles coincidencias; sin vincular</h4>
+            @for (candidate of row.candidates; track candidate.student_id) { <p>{{ candidate.name }} — {{ value(candidate.course) }} {{ value(candidate.parallel) }} (ID {{ candidate.student_id }})</p> }
+          }
+          <details><summary>Datos recibidos y diferencias</summary>
+            <dl>@for (field of row.student | keyvalue; track field.key) { <div><dt>{{ label(field.key) }}</dt><dd>{{ value(field.value) }}</dd></div> }</dl>
+            @for (contact of row.contacts; track $index) { <h4>{{ label(value(contact['type'])) }}</h4><p class="values">{{ value(contact) }}</p> }
+            @for (difference of row.differences; track difference.field) {
+              <div class="difference"><h4>{{ label(difference.field) }}</h4><p class="values">Actual: {{ value(difference.current) }}</p><p class="values">Recibido: {{ value(difference.incoming) }}</p><p>{{ label(difference.action) }}. No aplicado.</p></div>
+            }
+          </details>
+        </article>
+      }
+    } @else {
+      <p class="notice">No aparecer en este archivo no significa retiro. No se elimina ni desactiva ningún registro.</p>
+      @for (person of absences(); track person.student_id) { <article>{{ person.name }} — {{ value(person.course) }} {{ value(person.parallel) }}</article> }
+    }
+    @if (!loading()) {
+      <nav aria-label="Paginación del preview"><button type="button" (click)="loadPage(page()-1)" [disabled]="page() <= 1">Anterior</button><span>Página {{ page() }} · {{ total() }} registros</span><button type="button" (click)="loadPage(page()+1)" [disabled]="page()*10 >= total()">Siguiente</button><button type="button" (click)="loadPage(page())">Actualizar página</button></nav>
+    }
+  }
+</section>

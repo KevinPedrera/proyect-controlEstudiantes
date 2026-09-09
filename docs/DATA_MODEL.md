@@ -2,9 +2,9 @@
 
 ## 1. Propósito
 
-Este documento define las tres entidades del MVP: Estudiante, Departamento y Movimiento, y la relación conceptual entre ellas. No se implementará una entidad/tabla Evento persistente.
+Este documento define Departamento, el esquema ampliado de estudiantes/importación de Fase 3A y Movimiento conceptual para fases posteriores. No se implementará una entidad/tabla Evento persistente.
 
-El modelo general es conceptual. La sección de Departamento incorpora la estructura concreta autorizada para Fase 2; Estudiante y Movimiento se implementarán en sus fases correspondientes.
+El modelo general es conceptual. La sección de Departamento incorpora la estructura concreta autorizada para Fase 2; Estudiante y sus entidades auxiliares tienen esquema en 3A, sin aplicación operativa; Movimiento sigue pendiente.
 
 Este documento responde principalmente a:
 
@@ -96,31 +96,35 @@ Los estudiantes serán almacenados en la base de datos local.
 
 La primera importación será controlada: se detectan filas vacías, incompletas, inválidas y posibles duplicados. No se fusionan automáticamente homónimos. Nombre, curso y paralelo sirven para identificar coincidencias visualmente, pero no constituyen una garantía de identidad única. No se modifica el Excel original. Cualquier reimportación requiere revisar su correspondencia antes de actualizar registros; no se presupone una sincronización automática con Excel.
 
-## Información mínima necesaria
+## Estructura de Fase 3A
 
-Para el MVP solamente necesitamos:
+| Entidad / tabla | Responsabilidad y restricciones |
+| --- | --- |
+| Institution / institution | Singleton id=1, nombre, FK opcional al año activo. No se configura desde preview. |
+| AcademicPeriod / academic_periods | ID, etiqueta y period_key única; sin fechas académicas deducidas. |
+| Student / students | ID interno; first_name/last_name obligatorios; middle_name/second_last_name/document/document_type opcionales; active; timestamps UTC; procedencia opcional. |
+| StudentAcademicPlacement / student_academic_placements | FK estudiante/año, course/parallel obligatorios; recorded_from/recorded_to; índice único parcial estudiante/año cuando recorded_to es NULL. |
+| StudentContact / student_contacts | FK estudiante, tipo, parentesco/nombres/teléfonos opcionales, active, procedencia. Una función vigente por padre/madre/representante; múltiples emergencias. |
+| ImportBatch / import_batches | UUID, perfil/hash/alcance/fechas/status, propuesta JSON de institución/año/resumen/ausencias/revisión del snapshot. |
+| ImportRow / import_rows | FK lote, fila única dentro del lote, categoría, payload JSON con valores, contactos, hoja/fila, advertencias, candidatos y diferencias. |
 
-- ID interno del sistema.
-- Nombres.
-- Apellidos.
-- Curso.
-- Paralelo.
-- Estado activo/inactivo.
+Mínimos operativos: nombre, apellido, curso y paralelo. Documento opcional y no único;
+la comparación detecta duplicados, no fusiona ni usa documentos como primary key.
+Nombres normalizados son candidatos, no identidad garantizada. No usar fila/# como ID.
+StudentContact no comparte una Person global; emergencia source_slot solo vive en evidencia.
 
-No se necesita para el MVP:
+Student y StudentContact reservan source_baseline JSON opcional para la futura BASE aceptada;
+no se llena desde preview y no depende de la retención del borrador. source_batch_id opcional
+permite altas manuales futuras. Ningún endpoint de 3A crea o modifica estas entidades.
 
-- carnet;
-- código institucional;
-- cédula;
-- información del representante;
-- teléfono;
-- dirección;
-- sanciones;
-- historial académico;
-- información médica;
-- observaciones personales.
+La versión académica representa cuándo se registra un cambio, no su fecha efectiva desconocida.
+En 3B, cerrar versión anterior y crear nueva; a futuro Movement referenciará la versión de su inicio.
+Cambiar año activo no altera versiones históricas. No hay Movement implementado.
 
-Estos elementos podrán estudiarse en futuras versiones.
+Ausentes se interpretan como NULL; UI Sin registrar. Guiones se conservan y advierten.
+Vacíos entrantes no borran existentes. No crear contactos por bloques totalmente vacíos.
+El preview se conserva 24 horas; luego filas/propuesta se purgan, quedando lápida mínima sin datos personales.
+Sin ficha completa, alta/edición manual, búsqueda operativa, login o aplicación de importaciones.
 
 ---
 
@@ -562,7 +566,7 @@ No forman parte actualmente del modelo:
 - permisos avanzados;
 - sanciones;
 - amonestaciones;
-- representantes;
+- fichas completas de representantes;
 - documentación;
 - fichas médicas;
 - expedientes;

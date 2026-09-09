@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import router as api_router
+from app.import_api import ImportBodyLimit, router as import_router, start_cleanup, stop_cleanup
 from app.config import Settings, get_settings
 from app.database import create_database_engine, create_session_factory
 from app.websocket import ConnectionManager, websocket_endpoint
@@ -21,8 +22,12 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Libera los recursos del motor cuando el proceso termina."""
-    yield
-    app.state.engine.dispose()
+    cleanup_task = await start_cleanup(app)
+    try:
+        yield
+    finally:
+        await stop_cleanup(cleanup_task)
+        app.state.engine.dispose()
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -43,7 +48,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         CORSMiddleware,
         allow_origins=list(resolved_settings.cors_origins),
         allow_credentials=False,
-        allow_methods=["GET", "PUT"],
+        allow_methods=["GET", "PUT", "POST"],
         allow_headers=[],
     )
 
@@ -55,6 +60,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
 
     app.include_router(api_router, prefix="/api")
+    app.include_router(import_router, prefix="/api")
+    app.add_middleware(ImportBodyLimit)
     app.add_api_websocket_route("/ws", websocket_endpoint)
     return app
 
