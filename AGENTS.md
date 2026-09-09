@@ -31,7 +31,7 @@ Si existe contradicción entre el código y la documentación, el agente debe in
 
 No implementar funcionalidades que no pertenezcan a la fase actual.
 
-El desarrollo debe seguir el orden establecido en docs/ROADMAP.md. La fase autorizada es Fase 1, exclusivamente el esqueleto técnico de FastAPI, SQLite/SQLAlchemy/Alembic, Angular, health y WebSocket inicial. No iniciar Fase 2 ni implementar entidades o reglas del dominio.
+El desarrollo debe seguir el orden establecido en docs/ROADMAP.md. La fase autorizada es Fase 2: departamentos y disponibilidad en tiempo real sobre el esqueleto de Fase 1. No iniciar Fase 3 ni implementar estudiantes, movimientos o funcionalidades posteriores. La autorización específica del usuario prevalece sobre las referencias históricas de fase en las configuraciones de agentes.
 
 Un agente no debe adelantarse a fases futuras.
 
@@ -361,7 +361,7 @@ Debe indicar:
 
 Una decisión nueva debe registrarse en docs/DECISIONS.md antes de implementarse.
 
-Las decisiones técnicas rutinarias que no alteren estos aspectos pueden resolverse con la solución más simple y documentarse brevemente cuando sea útil, conforme a la autorización de Fase 1.
+Las decisiones técnicas rutinarias que no alteren estos aspectos pueden resolverse con la solución más simple y documentarse brevemente cuando sea útil, conforme a la autorización de la fase actual.
 
 ---
 

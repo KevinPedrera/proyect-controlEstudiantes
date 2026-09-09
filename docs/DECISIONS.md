@@ -202,6 +202,20 @@ Conservar el historial operativo sin duplicar persistencia. WebSocket no necesit
 
 ---
 
+## DEC-026 — Fase 2 autorizada: departamentos
+
+**Decisión:** Implementar exclusivamente Department en la tabla departments: id, name, group, active y availability. Los grupos son INSPECCION, DECE y SALUD; la disponibilidad admite DISPONIBLE y NO_DISPONIBLE. La primera migración de dominio crea la tabla e inserta los ocho departamentos definidos en DATA_MODEL.md, activos y disponibles, con IDs generados por SQLite. Se aplican CHECK y unicidad por grupo/nombre. No hay timestamps ni otras tablas de dominio.
+
+**Operación:** GET /api/departments devuelve todos los departamentos ordenados por grupo (Inspección, DECE, Salud) e ID. PUT /api/departments/{department_id}/availability establece el valor explícito; responde 200 sin modificar ni avisar si ya coincide. Errores 404 para inexistente, 409 para inactivo y 422 para entrada inválida. Los inactivos siguen visibles, sin control habilitado. No hay CRUD general ni activación/desactivación.
+
+## DEC-027 — Disponibilidad persistente y sincronización simple
+
+**Decisión:** Las escrituras usan transacciones cortas; prevalece la última escritura confirmada. Después del commit de un cambio real se difunde únicamente {"type":"departments_changed"} por /ws. Un fallo de difusión no revierte el commit. No hay eventos persistentes, replay, IDs o timestamps de eventos ni objetos Department dentro del mensaje.
+
+**Frontend:** Recuperar el listado al abrir, recibir un aviso y reconectar. Usar un solo socket y temporizador de reconexión, evitar respuestas antiguas y conservar el estado confirmado mientras se guarda. Un PUT correcto provoca nueva consulta oficial. No hay actualización optimista ni reintentos automáticos de escrituras. La recuperación debe ser pequeña y comprensible.
+
+**Alcance y validación:** No se agregan dependencias UI ni funciones de Fase 3. Se preservan .codex/config.toml y los archivos de agentes por instrucción expresa; sus referencias de Fase 1 son históricas. Se prueban migraciones solo con retrocesos sobre bases desechables. La comprobación manual LAN del usuario queda pendiente tras la implementación; FastAPI puede seguir en loopback detrás del proxy Angular. No se abren reglas permanentes de firewall ni se realizan commits.
+
 ## Regla general
 
 Toda nueva decisión importante deberá registrarse en este documento antes de implementarse en el código.

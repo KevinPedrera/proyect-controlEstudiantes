@@ -11,7 +11,7 @@ Una fase NO debe comenzar hasta que la anterior funcione correctamente.
 Codex no debe adelantarse a fases posteriores ni implementar
 funcionalidades que no estén contempladas en el MVP.
 
-Estado actual: Fase 1 — esqueleto técnico completado y validado mediante pruebas automatizadas y comprobación manual de HTTP/WebSocket. Fase 0.1 completada. Fase 2 no iniciada.
+Estado actual: Fase 2 — departamentos y disponibilidad en tiempo real, implementada y pendiente de validación manual en dos dispositivos. Fase 1 completada y validada. Fase 3 no iniciada.
 
 Las rutas documentales mencionadas en este archivo se expresan desde la raíz del proyecto.
 
@@ -678,7 +678,7 @@ Si durante una implementación descubre que necesita tomar una
 decisión que cambie arquitectura, alcance, integridad, modelo conceptual o roadmap y no está definida en la documentación, deberá detenerse
 y documentar la duda en lugar de decidir unilateralmente.
 
-Las decisiones técnicas rutinarias pueden resolverse con la solución más simple y documentarse brevemente cuando sea útil, según la autorización de Fase 1.
+Las decisiones técnicas rutinarias pueden resolverse con la solución más simple y documentarse brevemente cuando sea útil, según la autorización de la fase actual.
 
 ---
 

@@ -4,7 +4,7 @@
 
 Este documento define las tres entidades del MVP: Estudiante, Departamento y Movimiento, y la relación conceptual entre ellas. No se implementará una entidad/tabla Evento persistente.
 
-El objetivo no es definir todavía la estructura exacta de SQLite ni escribir SQL.
+El modelo general es conceptual. La sección de Departamento incorpora la estructura concreta autorizada para Fase 2; Estudiante y Movimiento se implementarán en sus fases correspondientes.
 
 Este documento responde principalmente a:
 
@@ -182,6 +182,22 @@ Para el MVP se contemplan los siguientes grupos.
 La estructura exacta podrá ajustarse posteriormente sin cambiar el concepto de Departamento.
 
 Cada departamento tiene ID interno, nombre, grupo, disponibilidad y condición activo/inactivo. Grupo representa Inspección, DECE o Salud; no requiere una entidad adicional en el MVP. Activo/inactivo no equivale a disponibilidad temporal.
+
+## Estructura de Fase 2
+
+La entidad SQLAlchemy Department corresponde a la tabla departments:
+
+| Campo | Tipo | Regla |
+| --- | --- | --- |
+| id | Entero | Clave primaria generada por SQLite |
+| name | Texto | Obligatorio, de 1 a 120 caracteres y sin espacios exteriores |
+| group | Texto | INSPECCION, DECE o SALUD |
+| active | Booleano | Obligatorio, inicialmente true |
+| availability | Texto | DISPONIBLE o NO_DISPONIBLE, inicialmente DISPONIBLE |
+
+La base protege los valores permitidos mediante CHECK y evita duplicados mediante unicidad de group/name. No se necesitan índices adicionales, timestamps ni campos de funciones posteriores.
+
+La primera migración crea e inserta los ocho departamentos de esta sección; no se crean datos al arrancar FastAPI. El listado incluye inactivos, que se muestran como Inactivo y no pueden modificar disponibilidad. No hay endpoints de alta, eliminación ni activación/desactivación en Fase 2.
 
 ---
 

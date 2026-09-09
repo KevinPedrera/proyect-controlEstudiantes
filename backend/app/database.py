@@ -1,4 +1,4 @@
-"""Conexión SQLite exclusiva del backend y soporte de sesiones futuras."""
+"""Conexión SQLite exclusiva del backend y control de transacciones."""
 
 from __future__ import annotations
 
@@ -25,14 +25,25 @@ def create_database_engine(settings: Settings) -> Engine:
 
     engine = create_engine(
         settings.database_url,
-        connect_args={"check_same_thread": False},
+        connect_args={"check_same_thread": False, "timeout": 5},
     )
 
     @event.listens_for(engine, "connect")
     def enable_sqlite_foreign_keys(dbapi_connection: object, _: object) -> None:
+        # SQLAlchemy controls BEGIN, including transactional migration DDL.
+        dbapi_connection.isolation_level = None  # type: ignore[attr-defined]
         cursor = dbapi_connection.cursor()  # type: ignore[attr-defined]
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
+
+    @event.listens_for(engine, "begin")
+    def begin_transaction(connection) -> None:
+        statement = (
+            "BEGIN IMMEDIATE"
+            if connection.get_execution_options().get("sqlite_write")
+            else "BEGIN"
+        )
+        connection.exec_driver_sql(statement)
 
     return engine
 

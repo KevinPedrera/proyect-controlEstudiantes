@@ -1,25 +1,55 @@
 <main>
-  <p class="eyebrow">Fase 1 · Conexión inicial</p>
-  <h1>Control Estudiantil</h1>
-  <p>La aplicación está funcionando. Comprueba su conexión con el servidor.</p>
-  <dl aria-live="polite">
-    <div>
-      <dt>Servidor</dt>
-      <dd data-testid="health" [class.ok]="health() === 'connected'">{{ healthLabel() }}</dd>
-    </div>
-    <div>
-      <dt>Tiempo real</dt>
-      <dd data-testid="websocket" [class.ok]="socket.state() === 'connected'">{{ socketLabel() }}</dd>
-    </div>
-  </dl>
-  <div class="actions">
-    <button type="button" (click)="checkConnections()" [disabled]="health() === 'checking'">
-      Comprobar conexión
-    </button>
-    <button type="button" class="secondary" (click)="socket.disconnect()"
-      [disabled]="socket.state() === 'disconnected'">
-      Desconectar tiempo real
-    </button>
+  <header>
+    <p class="eyebrow">Colegio · Departamentos</p>
+    <h1>Control Estudiantil</h1>
+    <p>Consulta y cambia la disponibilidad de cada departamento.</p>
+  </header>
+  <div class="connection">
+    <dl aria-live="polite">
+      <div><dt>Servidor</dt><dd data-testid="health">{{ healthLabel() }}</dd></div>
+      <div><dt>Tiempo real</dt><dd data-testid="websocket">{{ socketLabel() }}</dd></div>
+    </dl>
+    <button type="button" class="secondary" (click)="retry()"
+      [disabled]="data.loading() || data.savingId() !== null">Reintentar conexión y actualizar</button>
   </div>
-  <p class="note">Esta versión solo permite verificar la conexión. Las funciones del colegio se incorporarán en las siguientes fases.</p>
+  @if (socket.state() !== 'connected') {
+    <p class="notice" role="status">Sin conexión en tiempo real. Los datos pueden estar desactualizados.
+      Los cambios estarán habilitados al recuperar la conexión.</p>
+  }
+  @if (data.loading()) {
+    <p role="status">{{ data.loaded() ? 'Actualizando departamentos…' : 'Cargando departamentos…' }}</p>
+  }
+  @if (data.error()) { <p class="error notice" role="alert">{{ data.error() }}</p> }
+  @if (data.loaded() && data.departments().length === 0) {
+    <p role="status">No hay departamentos cargados.</p>
+  }
+  @if (data.loaded()) {
+    <div class="groups">
+      @for (group of grouped(); track group.key) {
+        <section [attr.aria-labelledby]="'group-' + group.key">
+          <h2 [id]="'group-' + group.key">{{ group.label }}</h2>
+          @for (department of group.departments; track department.id) {
+            <article class="department" [attr.data-department-id]="department.id"
+              [attr.aria-labelledby]="'department-' + department.id">
+              <h3 [id]="'department-' + department.id">{{ department.name }}</h3>
+              @if (!department.active) { <p class="inactive">Inactivo</p> }
+              <p class="availability" [class.available]="department.availability === 'DISPONIBLE'">
+                {{ department.availability === 'DISPONIBLE' ? 'DISPONIBLE' : 'NO DISPONIBLE' }}
+              </p>
+              <button type="button"
+                [disabled]="!department.active || !data.canChange()"
+                (click)="data.change(department, department.availability === 'DISPONIBLE' ? 'NO_DISPONIBLE' : 'DISPONIBLE')"
+                [attr.aria-describedby]="'department-' + department.id">
+                {{ data.savingId() === department.id ? 'Guardando…' :
+                    department.availability === 'DISPONIBLE' ? 'Marcar no disponible' : 'Marcar disponible' }}
+              </button>
+              @if (data.saveError()?.id === department.id) {
+                <p class="error" role="alert">{{ data.saveError()?.message }}</p>
+              }
+            </article>
+          }
+        </section>
+      }
+    </div>
+  }
 </main>

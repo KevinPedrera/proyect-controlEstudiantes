@@ -147,7 +147,7 @@ control-estudiantil/
 └── frontend/
 ```
 
-Las carpetas backend y frontend contienen exclusivamente el esqueleto técnico autorizado en Fase 1; las entidades de dominio se implementarán en sus fases correspondientes.
+Sobre el esqueleto técnico de Fase 1 se incorpora Department en Fase 2. El frontend consulta GET /api/departments, modifica disponibilidad mediante PUT /api/departments/{department_id}/availability y vuelve a consultar tras un aviso departments_changed o una reconexión WebSocket. No existen otras entidades implementadas de dominio.
 
 ---
 
