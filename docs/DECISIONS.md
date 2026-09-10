@@ -270,3 +270,58 @@ es advertencia; una correspondencia no segura sigue requiriendo resolución huma
 El payload separa warnings de blocking_review_reasons; conflicts permanece como alias
 compatible para clientes anteriores. Los borradores existentes conservan su snapshot;
 la clasificación corregida se obtiene generando una nueva previsualización.
+
+## DEC-032 — Fase 3B: aplicación autorizada sin resolución individual
+
+Fase 3A validada manualmente y respaldada en c48da34. El usuario autoriza 3B:
+preview obligatorio con contrato de aplicación versionado, confirmación explícita,
+aplicación atómica y comprobante recuperable. Un bloqueo en cualquier fila impide
+aplicar todo el lote; warnings no bloquean. No hay resolución individual, alta/edición
+manual, búsqueda, movimientos, bajas ni Fase 4. No modificar migraciones 0001/0002;
+usar 0003 preservando datos. No aplicar el Excel institucional real durante el desarrollo.
+
+## DEC-033 — Correspondencia y cambios efectivos
+
+Una correspondencia única coherente por documento válido, tipo y nombre completo
+prevalece sobre candidatos débiles con otro documento válido y otro nombre completo.
+Contradicciones reales, duplicados y correspondencias no seguras siguen bloqueando.
+La categoría describe cambios efectivos permitidos: SIN_CAMBIOS no altera timestamps,
+procedencia, contactos ni versiones. Vacío entrante conserva valor y BASE anteriores.
+Guion conserva evidencia y warning; no reemplaza un valor operativo útil. No usarlo
+como identidad compartida. Documento/nombres siguen sujetos a política conservadora.
+
+## DEC-034 — Contactos y procedencia
+
+Roles REPRESENTANTE_LEGAL/PADRE/MADRE/EMERGENCIA; los bloques 1/2 son evidencia,
+no identidad persistente. No fusionar entre estudiantes/roles ni por teléfono/nombre.
+Contactos idénticos o emergencias reordenadas conservan las entidades existentes.
+Solo correspondencias inequívocas permiten cambios de campos; sustituciones ambiguas
+bloquean. Bloques vacíos no eliminan/inactivan contactos. Conservar BASE aceptada
+por campo y protección manual mínima para uso futuro; no añadir acciones manuales.
+Excel puede actualizar campos Excel no protegidos; procedencia desconocida no otorga
+autoridad de sobrescritura. Ubicaciones por periodo mantienen sus versiones históricas.
+
+## DEC-035 — Transacción, concurrencia y resultado
+
+Confirmación consume solo el borrador persistido y el consentimiento mínimo, sin filas
+ni Excel enviados nuevamente. BEGIN IMMEDIATE antes de validar estado, TTL, contrato,
+integridad, bloqueos y huella de institución/periodos/estudiantes/ubicaciones/contactos.
+Departamentos y borradores quedan fuera de esa huella. Cambios relevantes invalidan
+el preview; no reinterpretar decisiones obsoletas silenciosamente. Datos, procedencia,
+APLICADO, fecha y comprobante se confirman juntos; cualquier fallo revierte todo.
+POST repetido sobre el mismo ID aplicado devuelve el mismo comprobante sin reaplicar.
+No estado persistente APLICANDO, colas ni nuevos eventos WebSocket.
+
+## DEC-036 — Configuración explícita, privacidad y recuperación
+
+Institución y primer periodo activo pueden configurarse desde lo detectado en el preview,
+como parte explícita de la confirmación. No cambiar institución ni periodo activo
+silenciosamente; la configuración propuesta debe mostrarse y aceptarse. No importar
+silenciosamente sobre periodos históricos. Ausencias PADRON_COMPLETO/SUBCONJUNTO
+nunca provocan bajas, eliminación ni cierres automáticos.
+Preview antiguo de 3A consultable hasta vencer, pero incompatible para confirmar.
+TTL limita el inicio validado bajo acceso de escritura, no interrumpe una aplicación
+ya autorizada. Purgar filas y propuesta personal a las 24 horas originales, incluso
+aplicadas; conservar comprobante mínimo no sensible recuperable por GET. Tras pérdida
+de respuesta Angular expresa resultado incierto y consulta GET, sin afirmar rollback.
+No PII en logs/errores ni fixtures reales. Sin commit/push durante implementación.

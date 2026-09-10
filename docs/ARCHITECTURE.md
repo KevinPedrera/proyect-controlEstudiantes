@@ -185,3 +185,20 @@ La tarea de limpieza vive en el lifespan de FastAPI, se cancela al cerrar y no u
 servicios externos. Se limpia al arrancar, cada minuto y al consultar importaciones.
 No se añaden eventos WebSocket de importación: el borrador se recupera por HTTP.
 Se mantienen sin cambios los mensajes y la recuperación de departamentos.
+
+## Confirmación 3B
+
+El preview calcula un plan efectivo con versión de contrato de aplicación independiente
+del perfil XLSX. Solo la confirmación explícita por ID puede aplicar datos operativos.
+La transacción toma acceso de escritura con BEGIN IMMEDIATE antes de comprobar estado,
+TTL, contrato, integridad, bloqueos, huella y configuración institucional/académica.
+La huella global conservadora excluye departamentos y borradores. Si cambió, exigir un
+preview nuevo; no recalcular silenciosamente decisiones durante la confirmación.
+Student, contactos, versiones académicas, procedencia y comprobante se confirman juntos.
+No lectura de Excel ni red dentro de esa transacción; ningún commit intermedio.
+Repetir confirmación de un ID aplicado devuelve el mismo comprobante sin repetir efectos.
+No hace falta estado persistente APLICANDO: el bloqueo de escritura y la transacción
+resuelven la concurrencia del único backend. La confirmación no emite eventos WebSocket.
+Angular recupera mediante GET el resultado de una confirmación cuya respuesta se perdió.
+Una desconexión no demuestra fallo ni rollback. El resultado agregado no contiene PII y
+permanece recuperable después de purgar el contenido personal temporal a las 24 horas.

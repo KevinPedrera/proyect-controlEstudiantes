@@ -31,7 +31,7 @@ Si existe contradicción entre el código y la documentación, el agente debe in
 
 No implementar funcionalidades que no pertenezcan a la fase actual.
 
-El desarrollo debe seguir el orden establecido en docs/ROADMAP.md. La fase autorizada es exclusivamente Fase 3A: esquema, lectura, validación, comparación y preview de importaciones. Fase 2 está validada en PC/celular LAN. No implementar Fase 3B (resolución/aplicación), alta o edición manual, búsqueda de Fase 4 ni movimientos. El preview solo escribe ImportBatch/ImportRow y nunca altera datos operativos. La autorización específica del usuario prevalece sobre las referencias históricas de fase en las configuraciones de agentes.
+El desarrollo debe seguir el orden establecido en docs/ROADMAP.md. La fase autorizada es exclusivamente Fase 3B: confirmación explícita y aplicación segura de previews compatibles. Fases 2 y 3A están validadas manualmente. No implementar resolución individual, alta o edición manual, búsqueda de Fase 4 ni movimientos. Generar preview solo escribe ImportBatch/ImportRow y nunca altera datos operativos; únicamente confirmar un preview válido aplica datos mediante una transacción atómica. No aplicar el Excel institucional real durante el desarrollo. No modificar migraciones 0001 ni 0002; usar una nueva 0003. La autorización específica del usuario prevalece sobre las referencias históricas de fase en las configuraciones de agentes.
 
 Un agente no debe adelantarse a fases futuras.
 

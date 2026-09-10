@@ -91,7 +91,7 @@ Cada nueva funcionalidad deberá aportar valor al flujo diario del colegio antes
 
 # Estado
 
-Fase 2 completada y validada manualmente en PC/celular LAN. Fase 3A implementada, con QA sin bloqueos y pendiente de validación manual: esquema, lectura y preview. Fase 3B y Fase 4 no iniciadas.
+Fases 2 y 3A completadas y validadas manualmente en PC/celular LAN. Fase 3B implementada, pendiente de validación manual real: confirmación explícita, aplicación atómica y comprobante recuperable. Fase 4 no iniciada.
 
 ## Ejecución local
 
@@ -192,14 +192,46 @@ Aplicar `alembic upgrade head` antes de iniciar la versión actual. La revisión
 No crea institución, periodo, estudiantes ni contactos reales.
 
 La sección de importación permite seleccionar XLSX (máximo 5 MB), declarar
-PADRON_COMPLETO o SUBCONJUNTO y generar un preview. No existe botón de aplicación.
+PADRON_COMPLETO o SUBCONJUNTO y generar un preview. En 3B, la aplicación requiere una confirmación explícita adicional sobre un preview compatible y sin bloqueos.
 Se muestra institución/año como propuesta, resumen, advertencias, candidatos,
 diferencias y páginas de diez filas. El ID permite recuperar el borrador durante 24 horas.
 Los detalles personales solo aparecen dentro de la revisión de importación.
 
 Contrato, límites y limpieza: [Preview de Fase 3A](docs/IMPORT_PREVIEW.md).
 
-Validación manual pendiente de 3A: generar un preview desde PC y celular,
-recuperarlo por ID, navegar filas y comprobar que departamentos sigue sincronizando.
-Comprobar el mensaje de no aplicación y que no hay controles de Fase 3B.
+La validación manual de 3A ya fue confirmada. La validación manual de 3B queda
+pendiente tras su cierre técnico. Generar preview sigue sin aplicar datos; confirmar
+es una acción diferente que modifica datos operativos y devuelve un comprobante.
 El Excel real se valida solo localmente y nunca se copia al repositorio.
+
+## Fase 3B: confirmación y comprobante
+
+La revisión 0003 añade soporte para contrato de aplicación, resultado permanente y
+protección de procedencia. Aplicar `alembic upgrade head` antes de iniciar la versión
+3B en la validación manual. Las revisiones 0001 y 0002 no cambian. Durante el desarrollo
+solo se migran bases desechables; no se aplica el listado institucional en la base local.
+
+Generar preview no crea estudiantes. Confirmar es otra acción: requiere un borrador
+nuevo compatible, sin bloqueos, y aceptación explícita de cambios operativos y de
+cualquier configuración institucional/académica propuesta. Los warnings no bloquean.
+Confirmar aplica todo o nada; repetir el mismo ID devuelve el mismo comprobante.
+Si se pierde la conexión, recuperar el ID para conocer el resultado antes de repetir.
+Un borrador obsoleto o incompatible requiere generar otro, sin resolución individual.
+Filas y detalles temporales vencen a las 24 horas; el comprobante aplicado permanece.
+
+Validación manual de 3B, después de revisar su cierre técnico:
+
+1. Iniciar backend y frontend actualizados y comprobar el panel de departamentos.
+2. Generar un preview nuevo. Los IDs de 3A no son confirmables.
+3. Revisar institución, año, alcance, categorías y warnings. Sobre la base sin estudiantes,
+   el listado institucional debe dar 863 NUEVO, 59 warnings en 30 filas y cero bloqueos.
+4. Aceptar explícitamente la configuración propuesta y la aplicación del lote.
+5. Confirmar una vez y verificar el comprobante agregado sin datos personales.
+6. Recuperar ese ID desde PC/celular: debe mostrar el mismo resultado aplicado.
+7. Generar otro preview del mismo listado sin modificar la base: debe dar 863 SIN_CAMBIOS,
+   sin nuevos estudiantes, contactos ni versiones académicas.
+8. Comprobar que cambios de disponibilidad y WebSocket siguen funcionando.
+
+Las pruebas automatizadas cubren rollback, concurrencia, vencimiento y respuesta perdida
+con datos sintéticos; no provocar fallos destructivos sobre la base institucional real.
+No hay búsqueda, edición/alta manual, movimientos, bajas ni Fase 4.

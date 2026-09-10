@@ -4,7 +4,7 @@
 
 Este documento define Departamento, el esquema ampliado de estudiantes/importación de Fase 3A y Movimiento conceptual para fases posteriores. No se implementará una entidad/tabla Evento persistente.
 
-El modelo general es conceptual. La sección de Departamento incorpora la estructura concreta autorizada para Fase 2; Estudiante y sus entidades auxiliares tienen esquema en 3A, sin aplicación operativa; Movimiento sigue pendiente.
+El modelo general es conceptual. La sección de Departamento incorpora la estructura concreta autorizada para Fase 2; Estudiante y sus entidades auxiliares tienen esquema en 3A y aplicación explícita autorizada en 3B; Movimiento sigue pendiente.
 
 Este documento responde principalmente a:
 
@@ -124,7 +124,43 @@ Cambiar año activo no altera versiones históricas. No hay Movement implementad
 Ausentes se interpretan como NULL; UI Sin registrar. Guiones se conservan y advierten.
 Vacíos entrantes no borran existentes. No crear contactos por bloques totalmente vacíos.
 El preview se conserva 24 horas; luego filas/propuesta se purgan, quedando lápida mínima sin datos personales.
-Sin ficha completa, alta/edición manual, búsqueda operativa, login o aplicación de importaciones.
+Sin ficha completa, alta/edición manual, búsqueda operativa ni login. La aplicación de
+importaciones pertenece exclusivamente a la confirmación explícita de 3B.
+
+## Evolución autorizada de Fase 3B
+
+La revisión concreta es `0003_import_apply`. El estado conceptual APLICADO se
+persiste como `APPLIED` (junto a PREVIEW/EXPIRED). ImportBatch incorpora
+`application_contract_version`, `applied_at` y `applied_result`; un CHECK exige
+fecha y comprobante únicamente para APPLIED. El contrato actual es `3B-1`;
+NULL identifica borradores anteriores no confirmables.
+
+Student, StudentContact y StudentAcademicPlacement usan `source_baseline` JSON
+por campo y `manual_protected_fields` JSON (lista de campos). Placement recibe
+ambas columnas en 0003; Student/Contact ya tenían BASE desde 0002. El valor
+operativo vive en su columna normal. Solo una escritura permitida avanza su BASE;
+otros campos, incluidos los protegidos o divergentes, conservan la BASE anterior.
+No se atribuye procedencia Excel a datos anteriores de origen desconocido.
+
+La migración conserva los datos y referencias existentes. Su downgrade se
+rechaza si existe algún APPLIED: 0002 no puede conservar el comprobante ni su
+garantía de idempotencia. Las pruebas de reversión se limitan a bases desechables.
+
+ImportBatch conserva el ID como identidad de la operación; añade contrato de aplicación,
+estado APLICADO, fecha de aplicación y comprobante agregado sin datos personales. El
+contenido personal de ImportRow/proposal mantiene su TTL original, aun después de aplicar.
+El comprobante y las referencias source_batch_id sobreviven a esa purga.
+La BASE aceptada se registra por campo en las entidades operativas y no se elimina al
+purgar el borrador. Se prepara protección manual por campo, sin UI ni endpoints manuales.
+Un campo de procedencia desconocida no se considera automáticamente propiedad de Excel.
+Los cambios permitidos actualizan valor y BASE; vacíos y guiones no destruyen datos útiles.
+SIN_CAMBIOS no altera entidades, procedencia, timestamps ni versiones.
+Dentro del mismo periodo, cambiar curso/paralelo cierra la ubicación abierta y crea otra.
+Un periodo nuevo conserva las versiones del anterior. Configurar institución/periodo
+activo desde el preview requiere aceptación explícita; nunca se cambia silenciosamente.
+Los contactos permanecen separados por estudiante y rol. Emergencias 1/2 no son claves
+de identidad; solo coincidencias inequívocas permiten actualización. Sustituciones
+ambiguas bloquean el lote. Ausencias no eliminan ni inactivan estudiantes o contactos.
 
 ---
 

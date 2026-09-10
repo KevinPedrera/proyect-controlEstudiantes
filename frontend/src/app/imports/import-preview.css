@@ -9,6 +9,12 @@ button:disabled { opacity:.55; cursor:default; }
 button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline:3px solid #bb720c; outline-offset:3px; }
 .notice { padding:.8rem; background:#fff7e8; border:1px solid #dcc391; border-radius:.3rem; }
 .error { color:#942c28; }
+.warning { color:#713d00; }
+.success { padding:.8rem; color:#154f3d; background:#e7f4eb; border:1px solid #8ab39f; border-radius:.3rem; }
+.confirmation, .receipt { margin:1rem 0; padding:1rem; border:2px solid #496b61; border-radius:.5rem; background:#f5fbf8; }
+.confirmation .check { display:flex; flex-direction:row; align-items:center; gap:.6rem; margin:.8rem 0; }
+.confirmation .check input { min-height:auto; }
+.confirm { background:#8a3d00; }
 article { padding:1rem; border:1px solid #cdd9d4; margin:1rem 0; border-radius:.5rem; background:white; overflow-wrap:anywhere; }
 .counts { display:flex; gap:1.5rem; flex-wrap:wrap; padding-left:1.2rem; }
 summary { padding:.8rem 0; cursor:pointer; min-height:44px; }

@@ -21,7 +21,7 @@ def seed(client, *, document='0123456789', first_name='Ana', course='Séptimo', 
         student = Student(first_name=first_name, last_name='Pérez', document=document, document_type='Cédula' if document else None)
         session.add(student)
         session.flush()
-        session.add(StudentAcademicPlacement(student_id=student.id, academic_period_id=period.id, course=course, parallel='A'))
+        session.add(StudentAcademicPlacement(student_id=student.id, academic_period_id=period.id, course=course, parallel='A', source_baseline={'course': course, 'parallel': 'A'}))
         if contact: session.add(StudentContact(student_id=student.id, type='MADRE', first_name='Familiar', mobile_phone='0991111111'))
         session.commit()
         return student.id
@@ -43,8 +43,8 @@ def test_preview_is_non_destructive_and_recovers_snapshot(client):
     response = upload(client)
     rows = preview_rows(client, response)
     assert snapshot(client) == before
-    assert rows[0]['category'] == 'ACTUALIZACION'
-    assert rows[0]['differences'][-1]['action'] == 'REVISAR_CONTACTOS_SIN_BORRAR_VACIOS'
+    assert rows[0]['category'] == 'SIN_CAMBIOS'
+    assert rows[0]['differences'] == []  # Missing contact blocks preserve existing data.
     assert response.json()['institution'] == 'Colegio de prueba'
     assert response.json()['emergency_blocks'] == 2
     assert response.headers['cache-control'] == 'no-store'
@@ -164,9 +164,12 @@ def test_duplicate_rows_and_competing_candidates(client, second):
 
 def test_empty_incoming_value_preserves_existing_proposal(client):
     seed(client)
+    before = snapshot(client)
     row = preview_rows(client, upload(client, binary(workbook([{'C':None}]))))[0]
-    change = next(d for d in row['differences'] if d['field']=='document')
-    assert change['incoming'] is None and change['action']=='CONSERVAR_ACTUAL'
+    assert row['student']['document'] is None  # Received evidence remains available.
+    assert row['category'] == 'REQUIERE_REVISION'  # No strong documentary match.
+    assert row['blocking_review_reasons']
+    assert snapshot(client) == before
 
 
 @pytest.mark.parametrize('scope,expected', [('SUBCONJUNTO',0),('PADRON_COMPLETO',1)])
@@ -237,7 +240,7 @@ def test_no_future_endpoints_and_safe_errors(client, caplog):
     assert response.status_code==422
     assert '9999999999' not in response.text+caplog.text
     assert upload(client,scope='INVALID').status_code==422
-    for path in ['confirm','resolutions']:
+    for path in ['resolutions']:
         assert client.post('/api/student-imports/00000000-0000-0000-0000-000000000000/'+path).status_code==404
     assert client.post('/api/students').status_code==404
     assert client.get('/api/students').status_code==404

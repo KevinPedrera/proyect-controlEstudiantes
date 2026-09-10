@@ -11,7 +11,7 @@ Una fase NO debe comenzar hasta que la anterior funcione correctamente.
 Codex no debe adelantarse a fases posteriores ni implementar
 funcionalidades que no estén contempladas en el MVP.
 
-Estado actual: Fase 2 completada y validada en PC/celular LAN. Fase 3A implementada: esquema y preview, con QA sin bloqueos y pendiente de validación manual. Fase 3B y Fase 4 no iniciadas.
+Estado actual: Fases 2 y 3A completadas y validadas manualmente. Fase 3B implementada, pendiente de validación manual real. Fase 4 no iniciada.
 
 Las rutas documentales mencionadas en este archivo se expresan desde la raíz del proyecto.
 
@@ -161,7 +161,7 @@ manualmente la página.
 
 # FASE 3A — Esquema y previsualización
 
-Fase autorizada: Institution, AcademicPeriod, Student, StudentAcademicPlacement,
+Fase completada: Institution, AcademicPeriod, Student, StudentAcademicPlacement,
 StudentContact, ImportBatch e ImportRow; parser idukay_listado_filtrado_v1,
 validación, candidatos, comparación, preview persistido e interfaz mínima.
 Solo ImportBatch/ImportRow reciben datos. TTL 24 horas con limpieza de contenido personal.
@@ -173,13 +173,20 @@ ubicaciones académicas versionadas y año activo explícito. Sin fechas inventa
 
 Cierre: perfil real reconoce 863 filas, institución/año y dos bloques de emergencia;
 pruebas de parser, comparación, no destrucción, limpieza y regresión aprobadas;
-build/migraciones/QA correctos. Revisión humana antes de 3B.
+build/migraciones/QA correctos. Validación manual de 3A confirmada por el usuario.
 
-# FASE 3B — Resolución y aplicación (NO AUTORIZADA)
+# FASE 3B — Confirmación y aplicación segura (IMPLEMENTADA; VALIDACIÓN MANUAL PENDIENTE)
 
-Corresponderán aquí resolución de candidatos y confirmación transaccional explícita.
-No se implementan en 3A. Tampoco se implementan alta/edición manual ni búsqueda.
-La futura BASE importada aceptada debe mantenerse fuera de borradores temporales.
+Preview obligatorio con contrato de aplicación compatible. Confirmación explícita del
+lote completo sin bloqueos; aplicación atómica, idempotente y protegida contra obsolescencia.
+Corregir correspondencias débiles falsas y calcular cambios efectivos conservando vacíos,
+guiones, contactos y procedencia. Institución/periodo propuestos requieren aceptación
+explícita; historial académico preservado. Comprobante recuperable tras pérdida de
+respuesta y después de purgar PII temporal a las 24 horas. Migración 0003 sin cambiar
+0001/0002. No resolución individual, alta/edición manual, búsquedas, movimientos ni bajas.
+Cierre: pruebas de aplicación sintética, reimportación, rollback, concurrencia, privacidad,
+migración, regresión de 2/3A y QA independiente. La primera aplicación institucional real
+queda reservada al usuario tras la validación técnica. No commit/push automático.
 
 ---
 

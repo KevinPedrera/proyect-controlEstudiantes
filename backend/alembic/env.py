@@ -34,9 +34,23 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     connectable = create_database_engine(get_settings())
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata, transactional_ddl=True)
-        with context.begin_transaction():
-            context.run_migrations()
+        # Revision 0003 reconstructs a SQLite table referenced by preview rows and
+        # accepted records.  SQLite only permits that reconstruction with FK checks
+        # disabled before the migration transaction begins; integrity is checked
+        # before re-enabling them.
+        driver = connection.connection.driver_connection
+        driver.execute("PRAGMA foreign_keys=OFF")
+        try:
+            context.configure(connection=connection, target_metadata=target_metadata, transactional_ddl=True)
+            with context.begin_transaction():
+                context.run_migrations()
+                if connection.exec_driver_sql("PRAGMA foreign_key_check").fetchall():
+                    raise RuntimeError("La migración dejó claves foráneas inválidas.")
+        finally:
+            # Also restores enforcement after a failed migration/rollback.
+            if connection.in_transaction():
+                connection.rollback()
+            driver.execute("PRAGMA foreign_keys=ON")
     connectable.dispose()
 
 

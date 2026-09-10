@@ -1,4 +1,4 @@
-"""Esquema de Fase 3A. El preview no escribe las entidades operativas."""
+"""Esquema de previews 3A y aplicación 3B. Solo confirmar escribe datos operativos."""
 
 from datetime import datetime, timezone
 
@@ -17,7 +17,8 @@ class ImportBatch(Base):
     __tablename__ = "import_batches"
     __table_args__ = (
         CheckConstraint("scope IN ('PADRON_COMPLETO','SUBCONJUNTO')", name="ck_import_scope"),
-        CheckConstraint("status IN ('PREVIEW','EXPIRED')", name="ck_import_status"),
+        CheckConstraint("status IN ('PREVIEW','EXPIRED','APPLIED')", name="ck_import_status"),
+        CheckConstraint("(status = 'APPLIED' AND applied_at IS NOT NULL AND applied_result IS NOT NULL) OR (status != 'APPLIED' AND applied_at IS NULL AND applied_result IS NULL)", name="ck_import_application_state"),
         CheckConstraint("expires_at > created_at", name="ck_import_expiry"),
     )
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
@@ -29,6 +30,12 @@ class ImportBatch(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime, index=True)
     # Entire snapshot is purged on expiry, including absence and candidate data.
     proposal: Mapped[dict | None] = mapped_column(JSON(none_as_null=True))
+    # This is deliberately distinct from the parser profile: old drafts remain readable
+    # but cannot be applied after the application rules change.
+    application_contract_version: Mapped[str | None] = mapped_column(String(32))
+    applied_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # A permanent, deliberately non-personal receipt. Preview payload remains temporary.
+    applied_result: Mapped[dict | None] = mapped_column(JSON(none_as_null=True))
 
 
 class AcademicPeriod(Base):
@@ -69,6 +76,7 @@ class Student(Base):
     source_batch_id: Mapped[str | None] = mapped_column(ForeignKey("import_batches.id"))
     # Future accepted BASE is independent of temporary preview retention.
     source_baseline: Mapped[dict | None] = mapped_column(JSON(none_as_null=True))
+    manual_protected_fields: Mapped[list | None] = mapped_column(JSON(none_as_null=True))
 
 
 class StudentAcademicPlacement(Base):
@@ -86,6 +94,8 @@ class StudentAcademicPlacement(Base):
     recorded_from: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     recorded_to: Mapped[datetime | None] = mapped_column(DateTime)
     source_batch_id: Mapped[str | None] = mapped_column(ForeignKey("import_batches.id"))
+    source_baseline: Mapped[dict | None] = mapped_column(JSON(none_as_null=True))
+    manual_protected_fields: Mapped[list | None] = mapped_column(JSON(none_as_null=True))
 
 
 class StudentContact(Base):
@@ -110,6 +120,7 @@ class StudentContact(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     source_batch_id: Mapped[str | None] = mapped_column(ForeignKey("import_batches.id"))
     source_baseline: Mapped[dict | None] = mapped_column(JSON(none_as_null=True))
+    manual_protected_fields: Mapped[list | None] = mapped_column(JSON(none_as_null=True))
 
 
 class ImportRow(Base):
