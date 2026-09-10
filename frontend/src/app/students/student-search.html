@@ -1,0 +1,39 @@
+<section class="student-search" [attr.aria-labelledby]="inputId + '-title'">
+  <h2 [id]="inputId + '-title'">Buscar estudiante</h2>
+  @if (selected(); as student) {
+    <div class="selected-card">
+      <p class="selection-status">✓ Estudiante seleccionado</p>
+      <h3>{{ student.display_name }}</h3>
+      <p class="placement">{{ student.course }} · Paralelo {{ student.parallel }}</p>
+      <button #changeButton type="button" class="change" (click)="changeStudent()">Cambiar estudiante</button>
+    </div>
+  } @else {
+    <label [for]="inputId">Nombres o apellidos</label>
+    <input #searchInput [id]="inputId" type="search" [value]="query()"
+      (input)="searchChanged($event)" maxlength="120" autocomplete="off" autocapitalize="words"
+      [spellcheck]="false" enterkeyhint="search"
+      [attr.aria-describedby]="inputId + '-hint ' + inputId + '-status'">
+    <p class="hint" [id]="inputId + '-hint'">Escribe al menos 2 caracteres. Selecciona por nombre, curso y paralelo.</p>
+    <p class="status" [id]="inputId + '-status'" role="status" aria-live="polite">
+      @switch (state()) {
+        @case ('short') { Escribe al menos 2 caracteres. }
+        @case ('waiting') { Buscaremos al terminar de escribir. }
+        @case ('loading') { Buscando… }
+        @case ('empty') { No encontramos estudiantes con ese nombre. }
+        @case ('results') { {{ results().length }} coincidencias. Si no encuentras al estudiante, añade otro nombre o apellido. }
+        @case ('error') { No pudimos realizar la búsqueda. Intenta nuevamente. }
+      }
+    </p>
+    @if (state() === 'error') { <button type="button" class="retry" (click)="retry()">Reintentar búsqueda</button> }
+    @if (results().length) {
+      <ul aria-label="Estudiantes encontrados">
+        @for (student of results(); track student.student_id) {
+          <li><button type="button" class="result" (click)="select(student)">
+            <span class="name">{{ student.display_name }}</span>
+            <span class="placement">{{ student.course }} · Paralelo {{ student.parallel }}</span>
+          </button></li>
+        }
+      </ul>
+    }
+  }
+</section>

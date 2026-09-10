@@ -11,7 +11,7 @@ Una fase NO debe comenzar hasta que la anterior funcione correctamente.
 Codex no debe adelantarse a fases posteriores ni implementar
 funcionalidades que no estén contempladas en el MVP.
 
-Estado actual: Fases 2 y 3A completadas y validadas manualmente. Fase 3B implementada, pendiente de validación manual real. Fase 4 no iniciada.
+Estado actual: Fases 2 y 3A completadas y validadas manualmente. Fase 3B implementada, con alumnado operacional cargado. Fase 4 implementada, aprobada por QA y pendiente de validación manual. Fase 5 no iniciada.
 
 Las rutas documentales mencionadas en este archivo se expresan desde la raíz del proyecto.
 
@@ -190,7 +190,7 @@ queda reservada al usuario tras la validación técnica. No commit/push automát
 
 ---
 
-# FASE 4 — Búsqueda de estudiantes
+# FASE 4 — Búsqueda y selección de estudiantes
 
 ## Objetivo
 
@@ -214,6 +214,14 @@ Búsqueda incremental en backend, con hasta cinco coincidencias visibles; no des
 
 El personal puede escribir una parte del nombre o apellido
 y encontrar rápidamente al estudiante correcto.
+
+Implementación: GET /api/students/search sobre alumnos activos y ubicación abierta
+del periodo activo, con normalización de tildes/mayúsculas y orden de términos.
+Componente reutilizable con debounce de 300 ms, cancelación de consultas antiguas,
+cinco resultados como máximo, selección local y «Cambiar estudiante». Sin migración.
+Revisar escritorio, tablet, teléfono vertical/estrecho, foco y targets táctiles.
+La validación manual en dispositivo físico sigue pendiente tras pruebas y QA técnico.
+No crear movimientos ni avanzar a Fase 5 automáticamente.
 
 ---
 

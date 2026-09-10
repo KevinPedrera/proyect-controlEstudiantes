@@ -632,3 +632,14 @@ Si la respuesta es no, deberá evaluarse para una versión posterior.
 La simplicidad tiene prioridad sobre la cantidad de funcionalidades.
 
 El objetivo actual es demostrar que el sistema resuelve correctamente el seguimiento de estudiantes en tiempo real dentro del colegio.
+
+## Proyección de consulta de Fase 4
+
+Sin cambios de tablas, columnas ni índices; se conserva la revisión 0003_import_apply.
+La búsqueda proyecta Student.id como student_id, first_name, middle_name, last_name,
+second_last_name y los campos course/parallel de la ubicación abierta del periodo
+activo. display_name se compone conservando los nombres originales. Solo Student
+activo es elegible. No se devuelve documento, contactos, procedencia ni datos de
+importación. No se guardan claves normalizadas; el cálculo es temporal en backend.
+No se modifica Student ni Placement al consultar o seleccionar. Los homónimos
+conservan IDs distintos y se distinguen visualmente mediante curso/paralelo.

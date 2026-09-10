@@ -234,3 +234,13 @@ Fase 3B está autorizada para confirmar y aplicar previews sin bloqueos, con tra
 idempotencia, conservación del historial y comprobante recuperable. No incluye resolución
 individual de conflictos. Alta/edición manual y búsqueda no pertenecen a 3A ni 3B. La vista operativa futura muestra solo nombres/apellidos/curso/paralelo.
 Ver [contrato de preview](IMPORT_PREVIEW.md). Fase 2 validada manualmente en PC/celular LAN.
+
+## Alcance de Fase 4
+
+Búsqueda y selección operacional por nombres/apellidos, desde dos letras útiles,
+máximo cinco resultados, tolerancia a tildes, mayúsculas, espacios y orden de términos.
+Solo estudiantes activos con ubicación abierta del periodo activo. Vista mínima:
+nombre original, curso y paralelo; selección local reemplazable sin recargar.
+Sin documentos, contactos, ficha completa, edición, movimientos ni Fase 5.
+Interacción móvil prioritaria y el mismo componente en escritorio, con controles
+táctiles grandes, foco visible y navegación Tab/Enter/Escape.

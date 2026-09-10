@@ -202,3 +202,27 @@ resuelven la concurrencia del único backend. La confirmación no emite eventos 
 Angular recupera mediante GET el resultado de una confirmación cuya respuesta se perdió.
 Una desconexión no demuestra fallo ni rollback. El resultado agregado no contiene PII y
 permanece recuperable después de purgar el contenido personal temporal a las 24 horas.
+
+## Búsqueda y selección de Fase 4
+
+GET /api/students/search utiliza una transacción de lectura de Institution, Student
+y StudentAcademicPlacement. Consulta solo ID, nombres y curso/paralelo de alumnos
+activos con ubicación abierta en el periodo activo. No carga entidades completas,
+contactos ni importaciones. Normaliza los nombres en memoria del backend (NFKD,
+sin diacríticos, casefold, tokenización alfabética); todas las palabras de consulta
+deben coincidir. Prioriza nombre completo, palabras completas, prefijos y subcadenas;
+desempata alfabéticamente e ID. El recorrido lineal y cinco mejores resultados son
+suficientes para el volumen local; no hay caché, FTS ni modificación del esquema.
+
+StudentSearchService usa HttpClient del proyecto, timeout de 10 segundos y rutas
+relativas. StudentSearch es reutilizable; emite selectionChange con el estudiante
+mínimo seleccionado o null, sin persistencia ni acción operacional. switchMap recibe
+cada pulsación antes del temporizador de 300 ms: cancela inmediatamente tanto el
+debounce como HTTP anteriores. Los resultados antiguos no pueden sustituir los nuevos.
+Diseño vertical fluido, ancho máximo 42rem en escritorio y controles táctiles grandes.
+Los resultados son botones nativos (Tab/Enter), Escape limpia y devuelve el foco.
+
+El DTO excluye documentos/contactos/procedencia; la API no refleja entradas inválidas.
+SearchQueryRedaction elimina los parámetros del endpoint en uvicorn.access, sin
+desactivar el registro general. No se registran consultas en los logs propios.
+La normalización de búsqueda es independiente de las reglas de identidad de 3B.

@@ -15,6 +15,8 @@ from app.import_api import ImportBodyLimit, router as import_router, start_clean
 from app.config import Settings, get_settings
 from app.database import create_database_engine, create_session_factory
 from app.websocket import ConnectionManager, websocket_endpoint
+from app.student_search_api import router as search_router
+from app.search_logging import configure_search_log_privacy
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +35,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app(settings: Settings | None = None) -> FastAPI:
     """Construye la aplicación sin inicializar recursos de dominio."""
     resolved_settings = settings or get_settings()
+    configure_search_log_privacy()
     app = FastAPI(
         title="Control Estudiantil",
         docs_url=None,
@@ -61,6 +64,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(api_router, prefix="/api")
     app.include_router(import_router, prefix="/api")
+    app.include_router(search_router, prefix="/api")
     app.add_middleware(ImportBodyLimit)
     app.add_api_websocket_route("/ws", websocket_endpoint)
     return app

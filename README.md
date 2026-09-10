@@ -91,7 +91,7 @@ Cada nueva funcionalidad deberá aportar valor al flujo diario del colegio antes
 
 # Estado
 
-Fases 2 y 3A completadas y validadas manualmente en PC/celular LAN. Fase 3B implementada, pendiente de validación manual real: confirmación explícita, aplicación atómica y comprobante recuperable. Fase 4 no iniciada.
+Fases 2 y 3A completadas y validadas manualmente en PC/celular LAN. Fase 3B implementada y utilizada para cargar el alumnado operacional. Fase 4 implementada, aprobada por QA y pendiente de validación manual: búsqueda y selección de estudiantes. Fase 5 no iniciada.
 
 ## Ejecución local
 
@@ -234,4 +234,53 @@ Validación manual de 3B, después de revisar su cierre técnico:
 
 Las pruebas automatizadas cubren rollback, concurrencia, vencimiento y respuesta perdida
 con datos sintéticos; no provocar fallos destructivos sobre la base institucional real.
-No hay búsqueda, edición/alta manual, movimientos, bajas ni Fase 4.
+El alcance de 3B no incluye búsqueda, edición/alta manual, movimientos ni bajas.
+
+## Fase 4: buscar y seleccionar estudiantes
+
+La sección «Buscar estudiante», antes de los departamentos, consulta únicamente
+alumnado activo con ubicación abierta en el periodo académico activo del backend.
+Escribe dos letras útiles o más; tras 300 ms aparecen hasta cinco coincidencias.
+Se toleran mayúsculas, tildes, espacios y orden de nombres/apellidos. La respuesta
+conserva la escritura original. Tocar un resultado muestra nombre, curso y paralelo;
+«Cambiar estudiante» permite buscar otra vez sin recargar. No hay acciones posteriores.
+
+`GET /api/students/search?q=<texto>&limit=5` devuelve una lista con student_id,
+first_name, middle_name, last_name, second_last_name, display_name, course y parallel.
+El ID no se muestra. No contiene documentos, teléfonos ni contactos. q es obligatorio,
+admite hasta 120 caracteres; consultas con menos de dos letras devuelven []. limit
+admite enteros de 1 a 5. Parámetros inválidos: 422; sin periodo activo: 409; consulta
+fallida: mensaje seguro 500/503. Las respuestas son no-store y el access log de
+Uvicorn omite los parámetros del endpoint para no registrar nombres consultados.
+
+No hubo migración ni nuevas dependencias. Alembic continúa en 0003_import_apply.
+La normalización, relevancia y límites se detallan en decisiones DEC-037 a DEC-039.
+La búsqueda no lee Excel ni previews y no modifica estudiantes. La selección es
+temporal, solo en UI; desaparece al recargar. Fase 5 no está implementada.
+
+Validación manual: probar en PC y celular búsquedas por dos componentes en ambos
+órdenes, selección/cambio, ausencia de resultados y recuperación tras un error de
+conexión. En PC usar Tab y Enter para seleccionar y Escape para limpiar resultados.
+En celular comprobar teclado virtual, desplazamiento vertical y pulsación con una
+mano. No volver a importar el Excel para probar esta fase.
+
+Validación técnica de Fase 4: backend 202/202 y frontend 44/44, cero fallos;
+build de producción correcto (213.27 kB). pip check, compilación Python y Alembic
+upgrade/current/heads/check correctos sobre base desechable; sin cambios de migraciones.
+Regresión HTTP GET/PUT de departamentos y avisos WebSocket comprobada también con
+dos clientes sobre datos sintéticos. Las suites preservan preview, confirmación y
+recuperación de comprobantes de 3A/3B.
+
+Revisión real de navegador con datos sintéticos: 1280×900, 768×1024, 390×844,
+320×740 y altura reducida 390×400. Sin overflow horizontal, nombres/cursos largos
+legibles, campo de 52 px y resultados de al menos 72 px. Tab/Enter, Escape,
+selección y retorno del foco verificados. La altura reducida simula espacio limitado;
+no sustituye la prueba del teclado virtual en un teléfono físico.
+Medición en backend con 863 alumnos sintéticos, veinte consultas: mediana 35.47 ms,
+máximo 43.88 ms, cinco resultados. Es una medición local, no una garantía de latencia LAN.
+
+QA independiente de Fase 4: APROBADO, sin defectos funcionales pendientes. Revisión
+propia de 43 pruebas backend de búsqueda y 44 frontend, además de interfaz real
+en escritorio, tablet y teléfono estrecho. Las dos advertencias de deprecación
+preexistentes de Starlette/httpx y anyio no bloquean esta fase. Sin cambios de
+dependencias por ellas. Sin commit/push; Fase 5 no iniciada.

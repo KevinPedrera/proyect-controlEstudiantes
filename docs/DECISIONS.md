@@ -325,3 +325,43 @@ ya autorizada. Purgar filas y propuesta personal a las 24 horas originales, incl
 aplicadas; conservar comprobante mínimo no sensible recuperable por GET. Tras pérdida
 de respuesta Angular expresa resultado incierto y consulta GET, sin afirmar rollback.
 No PII en logs/errores ni fixtures reales. Sin commit/push durante implementación.
+
+## DEC-037 — Fase 4: búsqueda y selección autorizadas
+
+El usuario autoriza búsqueda operacional por los cuatro componentes de nombre y
+selección UI, sin movimientos ni acciones posteriores. Solo Student activo con
+ubicación abierta en el periodo activo de Institution. No consultar Excel,
+ImportBatch/ImportRow, documentos ni contactos. GET /api/students/search requiere
+q; limit entero de 1 a 5 (por defecto 5), consulta de hasta 120 caracteres.
+Menos de dos letras útiles devuelve lista vacía; sin periodo activo, error 409
+comprensible. Respuesta mínima con student_id, nombres originales, display_name,
+course y parallel. El ID se conserva internamente, sin mostrarlo al usuario.
+
+## DEC-038 — Normalización y relevancia de búsqueda
+
+Sin migración ni dependencias: seleccionar solo ID, nombres y ubicación del año
+activo mediante SQLAlchemy. Normalizar en memoria del backend usando Unicode
+NFKD, eliminación de marcas diacríticas, casefold, separadores no alfabéticos y
+espacios colapsados. No guardar ni modificar nombres normalizados. Esta regla
+(incluida ñ/n) es solo para búsqueda; no altera el matching de importaciones.
+Todos los términos únicos deben aparecer dentro de alguna palabra del nombre.
+Orden: nombre completo equivalente sin importar orden; todos los términos como
+palabras completas; todos como prefijos; finalmente coincidencias internas.
+Desempatar por cantidad de términos completos/prefijos, apellidos y nombres
+normalizados y student_id. Homónimos se conservan como resultados independientes.
+El recorrido es lineal sobre campos mínimos del alumnado elegible, adecuado al
+volumen local actual, con selección de los cinco mejores; no se descarga el padrón
+al navegador ni se añade caché o infraestructura de búsqueda.
+
+## DEC-039 — Interacción y privacidad de Fase 4
+
+Componente Angular reutilizable y servicio HTTP, máximo cinco coincidencias,
+debounce de 300 ms y cancelación inmediata de consultas anteriores al escribir.
+Estados inicial, consulta corta, buscando, resultados, vacío, error y seleccionado.
+Selección local con evento reutilizable para fases posteriores; cambiar estudiante
+devuelve el foco al campo. Botones reales, Tab/Enter y Escape; sin navegación con
+flechas incompleta. Flujo vertical móvil, controles de al menos 44 px, texto adaptable
+y ancho acotado en escritorio. Sin almacenamiento persistente de consulta/selección.
+No registrar consultas; ocultar query string del endpoint en el access log de Uvicorn.
+Errores sin eco del texto recibido y respuestas no-store. Validación con datos
+sintéticos, viewport desktop/tablet/móvil y QA independiente; sin modificar alumnado real.
