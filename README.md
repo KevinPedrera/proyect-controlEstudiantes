@@ -91,7 +91,7 @@ Cada nueva funcionalidad deberá aportar valor al flujo diario del colegio antes
 
 # Estado
 
-Fases 2 y 3A completadas y validadas manualmente en PC/celular LAN. Fase 3B implementada y utilizada para cargar el alumnado operacional. Fase 4 implementada, aprobada por QA y pendiente de validación manual: búsqueda y selección de estudiantes. Fase 5 no iniciada.
+Fases 2 y 3A completadas y validadas manualmente en PC/celular LAN. Fase 3B implementada y utilizada para cargar el alumnado operacional. Fase 4 cerrada en cc19ef7. Fase 5 implementada y validada técnicamente; pendiente de validación manual del usuario.
 
 ## Ejecución local
 
@@ -142,10 +142,10 @@ No hay una tarea de lint ni pruebas e2e configuradas. Las pruebas del backend us
 
 - `GET /api/health`: comprobación del proceso.
 - `GET /api/departments`: listado completo con id, name, group, active y availability.
-- `PUT /api/departments/{department_id}/availability`: cuerpo con únicamente availability, DISPONIBLE o NO_DISPONIBLE. Devuelve el departamento confirmado. Es idempotente; un valor ya establecido no emite avisos.
+- `PUT /api/departments/{department_id}/availability`: cuerpo con availability, DISPONIBLE o NO_DISPONIBLE; Fase 5 admite además confirmed_active_counts para confirmar el cierre con movimientos activos. Devuelve el departamento confirmado. Es idempotente; un valor ya establecido no emite avisos.
 - `/ws`: aviso `departments_changed` después de confirmar un cambio real. La API es la fuente oficial del estado.
 
-No hay CRUD general, activación/desactivación ni movimientos. El esquema de estudiantes existe desde 3A, sin endpoints operativos. Un departamento inactivo responde 409 al intentar modificarlo; uno inexistente, 404; una entrada inválida, 422.
+No hay CRUD general ni activación/desactivación. Fases 4 y 5 añaden búsqueda y movimientos. Un departamento inactivo responde 409 al intentar modificarlo; uno inexistente, 404; una entrada inválida, 422.
 
 ## Validación de Fase 2
 
@@ -243,7 +243,7 @@ alumnado activo con ubicación abierta en el periodo académico activo del backe
 Escribe dos letras útiles o más; tras 300 ms aparecen hasta cinco coincidencias.
 Se toleran mayúsculas, tildes, espacios y orden de nombres/apellidos. La respuesta
 conserva la escritura original. Tocar un resultado muestra nombre, curso y paralelo;
-«Cambiar estudiante» permite buscar otra vez sin recargar. No hay acciones posteriores.
+«Cambiar estudiante» permite buscar otra vez sin recargar. Fase 5 añade acciones operativas.
 
 `GET /api/students/search?q=<texto>&limit=5` devuelve una lista con student_id,
 first_name, middle_name, last_name, second_last_name, display_name, course y parallel.
@@ -253,10 +253,10 @@ admite enteros de 1 a 5. Parámetros inválidos: 422; sin periodo activo: 409; c
 fallida: mensaje seguro 500/503. Las respuestas son no-store y el access log de
 Uvicorn omite los parámetros del endpoint para no registrar nombres consultados.
 
-No hubo migración ni nuevas dependencias. Alembic continúa en 0003_import_apply.
+No hubo migración ni nuevas dependencias. Fase 4 terminó en 0003_import_apply; Fase 5 añade 0004_movements.
 La normalización, relevancia y límites se detallan en decisiones DEC-037 a DEC-039.
 La búsqueda no lee Excel ni previews y no modifica estudiantes. La selección es
-temporal, solo en UI; desaparece al recargar. Fase 5 no está implementada.
+temporal, solo en UI; desaparece al recargar. Fase 5 añade movimientos.
 
 Validación manual: probar en PC y celular búsquedas por dos componentes en ambos
 órdenes, selección/cambio, ausencia de resultados y recuperación tras un error de
@@ -283,4 +283,23 @@ QA independiente de Fase 4: APROBADO, sin defectos funcionales pendientes. Revis
 propia de 43 pruebas backend de búsqueda y 44 frontend, además de interfaz real
 en escritorio, tablet y teléfono estrecho. Las dos advertencias de deprecación
 preexistentes de Starlette/httpx y anyio no bloquean esta fase. Sin cambios de
-dependencias por ellas. Sin commit/push; Fase 5 no iniciada.
+dependencias por ellas. Cierre histórico sin commit/push automático.
+
+## Fase 5: movimientos
+
+Envío, llegada, finalización, cancelación en camino y atención directa. Tarjetas
+de destinos agrupadas y paneles por departamento con cronómetros. El contexto local
+de departamento registra origen al enviar; atención directa usa ese destino y origen NULL.
+Disponibilidad con activos requiere confirmación de recuentos del backend.
+Antes de validar manualmente, detener backend y aplicar `alembic upgrade head`
+con el entorno virtual desde backend. Nueva revisión aditiva 0004_movements.
+**La base institucional no se migra durante desarrollo.** No usar downgrade en ella.
+Contrato y pasos: [Movimientos de Fase 5](docs/MOVEMENTS.md).
+
+
+Cierre técnico de Fase 5: 243 pruebas backend y 66 frontend aprobadas; build de
+producción correcto (232.38 kB iniciales, 64.82 kB estimados de transferencia).
+pip check, compilación Python, Alembic sobre base desechable y git diff --check
+correctos. QA independiente: APROBADO, sin defectos reproducibles bloqueantes.
+La evidencia sintética y los límites de la validación están en [Movimientos](docs/MOVEMENTS.md).
+No se migró la base institucional ni se modificó alumnado real. Sin commit/push.

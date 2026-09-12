@@ -6,6 +6,8 @@ import { App } from './app';
 import { Department } from './core/department.model';
 import { DepartmentsService } from './core/departments.service';
 import { SocketService } from './core/socket.service';
+import { Subject } from 'rxjs';
+import { MovementsService } from './movements/movements.service';
 
 const departments: Department[] = [
   { id: 1, name: 'Inspección General', group: 'INSPECCION', active: true, availability: 'DISPONIBLE' },
@@ -20,7 +22,7 @@ const departments: Department[] = [
 
 describe('Arranque y departamentos', () => {
   const socketState = signal<'disconnected' | 'connected'>('disconnected');
-  const socket = { state: socketState, connect: vi.fn(), disconnect: vi.fn() };
+  const socket = { state: socketState, events: new Subject(), connect: vi.fn(), disconnect: vi.fn() };
   const data = {
     departments: signal<Department[]>(departments), loading: signal(false), loaded: signal(true),
     error: signal(''), savingId: signal<number | null>(null), saveError: signal<{ id: number; message: string } | null>(null),
@@ -40,6 +42,10 @@ describe('Arranque y departamentos', () => {
         provideHttpClient(), provideHttpClientTesting(),
         { provide: SocketService, useValue: socket },
         { provide: DepartmentsService, useValue: data },
+        { provide: MovementsService, useValue: {
+          selected: signal(null), active: signal(null), context: signal(null), panels: signal({}),
+          synchronized: signal(true), saving: signal(false), message: signal(''), error: signal(''), canAct: signal(true),
+        } },
       ],
     });
     http = TestBed.inject(HttpTestingController);

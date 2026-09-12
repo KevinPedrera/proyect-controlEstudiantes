@@ -2,6 +2,8 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { timeout } from 'rxjs';
 
+export interface ActiveMovement { status: 'EN_CAMINO' | 'EN_ATENCION'; destination_name: string; }
+
 export interface StudentSearchResult {
   student_id: number;
   first_name: string;
@@ -11,6 +13,7 @@ export interface StudentSearchResult {
   display_name: string;
   course: string;
   parallel: string;
+  active_movement?: ActiveMovement | null;
 }
 
 @Injectable({ providedIn: 'root' })

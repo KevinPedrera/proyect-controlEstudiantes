@@ -31,6 +31,9 @@
           <li><button type="button" class="result" (click)="select(student)">
             <span class="name">{{ student.display_name }}</span>
             <span class="placement">{{ student.course }} · Paralelo {{ student.parallel }}</span>
+            @if (student.active_movement; as active) {
+              <span>{{ active.status === 'EN_CAMINO' ? 'En camino' : 'En atención' }} · {{ active.destination_name }}</span>
+            }
           </button></li>
         }
       </ul>

@@ -2,9 +2,9 @@
 
 ## 1. Propósito
 
-Este documento define Departamento, el esquema ampliado de estudiantes/importación de Fase 3A y Movimiento conceptual para fases posteriores. No se implementará una entidad/tabla Evento persistente.
+Este documento define Departamento, el esquema ampliado de estudiantes/importación de Fase 3A y Movimiento persistente de Fase 5. No se implementará una entidad/tabla Evento persistente.
 
-El modelo general es conceptual. La sección de Departamento incorpora la estructura concreta autorizada para Fase 2; Estudiante y sus entidades auxiliares tienen esquema en 3A y aplicación explícita autorizada en 3B; Movimiento sigue pendiente.
+El modelo general es conceptual. La sección de Departamento incorpora la estructura concreta autorizada para Fase 2; Estudiante y sus entidades auxiliares tienen esquema en 3A y aplicación explícita autorizada en 3B; Movimiento pertenece a Fase 5.
 
 Este documento responde principalmente a:
 
@@ -118,8 +118,8 @@ no se llena desde preview y no depende de la retención del borrador. source_bat
 permite altas manuales futuras. Ningún endpoint de 3A crea o modifica estas entidades.
 
 La versión académica representa cuándo se registra un cambio, no su fecha efectiva desconocida.
-En 3B, cerrar versión anterior y crear nueva; a futuro Movement referenciará la versión de su inicio.
-Cambiar año activo no altera versiones históricas. No hay Movement implementado.
+En 3B, cerrar versión anterior y crear nueva; Movement referencia la versión de su inicio.
+Cambiar año activo no altera versiones históricas. Movement se incorpora en Fase 5.
 
 Ausentes se interpretan como NULL; UI Sin registrar. Guiones se conservan y advierten.
 Vacíos entrantes no borran existentes. No crear contactos por bloques totalmente vacíos.
@@ -331,7 +331,7 @@ Cada movimiento debe permitir conocer como mínimo:
 
 Con esta información se podrán calcular automáticamente los tiempos.
 
-El departamento de destino es suficiente: no se requiere guardar departamento de origen en el MVP. Los ejemplos de derivación describen el flujo operativo, no un campo obligatorio adicional.
+El destino es obligatorio. El origen es opcional y se registra cuando existe contexto de departamento; para atención directa es NULL.
 
 Todos los timestamps oficiales los genera el backend. La hora de llegada representa también el inicio de atención. Los timestamps de pasos todavía no ocurridos están ausentes. Para la atención directa no existe timestamp de envío; el traslado no es aplicable, nunca se registra artificialmente como cero segundos.
 
@@ -643,3 +643,15 @@ activo es elegible. No se devuelve documento, contactos, procedencia ni datos de
 importación. No se guardan claves normalizadas; el cálculo es temporal en backend.
 No se modifica Student ni Placement al consultar o seleccionar. Los homónimos
 conservan IDs distintos y se distinguen visualmente mediante curso/paralelo.
+
+## Operación autorizada de Fase 5
+
+Flujo completo: envío EN_CAMINO, llegada EN_ATENCION, finalización FINALIZADO;
+cancelación EN_CAMINO → CANCELADO; atención directa sin origen ni envío.
+Historial persistido, FK a versión académica del inicio e índice único parcial
+por estudiante activo. BEGIN IMMEDIATE antes de leer para escribir.
+Disponibilidad con activos requiere confirmar recuentos autoritativos; si cambian,
+se vuelve a preguntar. No altera movimientos existentes. WebSocket avisa después
+del commit; API reconstruye paneles, selección y timers al abrir/recargar/reconectar.
+Sin documentos/contactos en vistas operativas. No transferencias o envío múltiple.
+Esquema, contratos y guía: [Movimientos de Fase 5](MOVEMENTS.md).

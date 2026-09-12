@@ -31,7 +31,14 @@ Si existe contradicción entre el código y la documentación, el agente debe in
 
 No implementar funcionalidades que no pertenezcan a la fase actual.
 
-El desarrollo debe seguir el orden establecido en docs/ROADMAP.md. La fase autorizada es exclusivamente Fase 4: búsqueda por nombres/apellidos y selección de estudiantes del periodo activo. Preservar Fases 2, 3A y 3B; no implementar movimientos, alta/edición manual ni resolución individual. La búsqueda es de solo lectura, no usa Excel ni previews, no devuelve documentos/contactos y muestra como máximo cinco resultados. Priorizar interacción móvil y comprobar también escritorio, tablet y teléfono estrecho. No modificar estudiantes reales ni migraciones 0001/0002/0003. No commit ni push. La autorización específica del usuario prevalece sobre referencias históricas de fase en documentos y configuraciones de agentes. QA final independiente en solo lectura.
+La fase autorizada es exclusivamente Fase 5: flujo completo de movimientos,
+paneles, cronómetros y recuperación API/WebSocket. Incluye CANCELADO solo desde
+EN_CAMINO y atención directa. Preservar fases 2, 3A, 3B y 4. Búsqueda con cinco
+resultados, sin documentos/contactos en operación. QA independiente de solo lectura.
+Migración nueva 0004, sin modificar 0001–0003 ni migrar la base institucional.
+No datos reales, Excel, commit, push, transferencias, envío múltiple o reportes.
+Priorizar móvil y comprobar escritorio, tablet, teléfono estrecho y altura reducida.
+La autorización vigente prevalece sobre referencias históricas en agentes.
 
 Un agente no debe adelantarse a fases futuras.
 
@@ -147,6 +154,7 @@ Los estados principales del MVP son:
 - EN_CAMINO
 - EN_ATENCION
 - FINALIZADO
+- CANCELADO
 
 No agregar estados adicionales sin aprobación.
 

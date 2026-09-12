@@ -9,6 +9,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.departments import DepartmentInactive, DepartmentNotFound, list_departments, set_availability
 from app.schemas import AvailabilityUpdate, DepartmentResponse
+from app.movements import MovementError
 
 router = APIRouter()
 
@@ -34,8 +35,11 @@ async def update_availability(
 ) -> DepartmentResponse:
     try:
         result, changed = await run_in_threadpool(
-            set_availability, request.app.state.session_factory, department_id, body.availability
+            set_availability, request.app.state.session_factory, department_id, body.availability,
+            body.confirmed_active_counts.model_dump() if body.confirmed_active_counts else None
         )
+    except MovementError as error:
+        raise HTTPException(error.status, error.detail) from None
     except DepartmentNotFound:
         raise HTTPException(404, "Departamento no encontrado.") from None
     except DepartmentInactive:

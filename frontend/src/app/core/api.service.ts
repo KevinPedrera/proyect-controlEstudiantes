@@ -19,8 +19,9 @@ export class ApiService {
     return this.http.get<Department[]>('/api/departments').pipe(timeout(5000));
   }
 
-  setAvailability(id: number, availability: Availability): Observable<Department> {
-    return this.http.put<Department>(`/api/departments/${id}/availability`, { availability })
+  setAvailability(id: number, availability: Availability, counts?: { en_camino: number; en_atencion: number }): Observable<Department> {
+    return this.http.put<Department>(`/api/departments/${id}/availability`,
+      { availability, ...(counts ? { confirmed_active_counts: counts } : {}) })
       .pipe(timeout(10000));
   }
 }

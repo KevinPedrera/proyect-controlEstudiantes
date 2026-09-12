@@ -26,7 +26,7 @@ def test_upgrade_downgrade_upgrade_and_check(tmp_path, monkeypatch):
     command.downgrade(config, "base")
     assert inspect(engine).get_table_names() == ["alembic_version"]
     command.upgrade(config, "head")
-    assert set(inspect(engine).get_table_names()) == {"alembic_version", "departments", "institution", "academic_periods", "students", "student_academic_placements", "student_contacts", "import_batches", "import_rows"}
+    assert set(inspect(engine).get_table_names()) == {"alembic_version", "movements", "departments", "institution", "academic_periods", "students", "student_academic_placements", "student_contacts", "import_batches", "import_rows"}
     command.check(config)
     engine.dispose()
 

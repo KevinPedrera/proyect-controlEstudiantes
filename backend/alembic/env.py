@@ -8,6 +8,7 @@ from app.config import get_settings
 from app.database import create_database_engine, metadata
 from app import models  # noqa: F401 -- register tables with metadata
 from app import student_models  # noqa: F401 -- register phase 3A tables
+from app import movement_models  # noqa: F401 -- register phase 5 table
 
 config = context.config
 if config.config_file_name is not None:

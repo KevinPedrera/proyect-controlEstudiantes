@@ -6,11 +6,13 @@ import { DepartmentGroup } from './core/department.model';
 import { DepartmentsService } from './core/departments.service';
 import { SocketService } from './core/socket.service';
 import { ImportPreview } from './imports/import-preview';
-import { StudentSearch } from './students/student-search';
+import { Operations } from './movements/operations';
+import { MovementPanel } from './movements/movement-panel';
+import { DialogHost } from './core/dialog';
 
 type HealthState = 'checking' | 'connected' | 'error';
 
-@Component({ selector: 'app-root', imports: [ImportPreview, StudentSearch], templateUrl: './app.html', styleUrl: './app.css' })
+@Component({ selector: 'app-root', imports: [ImportPreview, Operations, MovementPanel, DialogHost], templateUrl: './app.html', styleUrl: './app.css' })
 export class App implements OnInit {
   private readonly api = inject(ApiService);
   private readonly destroyRef = inject(DestroyRef);

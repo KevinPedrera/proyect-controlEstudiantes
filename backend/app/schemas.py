@@ -2,14 +2,21 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 Availability = Literal["DISPONIBLE", "NO_DISPONIBLE"]
+
+
+class ActiveCounts(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    en_camino: int = Field(ge=0, strict=True)
+    en_atencion: int = Field(ge=0, strict=True)
 
 
 class AvailabilityUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     availability: Availability
+    confirmed_active_counts: ActiveCounts | None = None
 
 
 class DepartmentResponse(BaseModel):

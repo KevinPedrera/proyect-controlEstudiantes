@@ -2,6 +2,46 @@
 
 # Decisiones del Proyecto
 
+## DEC-040 — Fase 5: flujo operativo completo autorizado
+
+La autorización actual consolida en Fase 5 envío, llegada, finalización, atención
+directa, cancelación, paneles, timers y tiempo real. Sustituye la distribución
+histórica en fases 5–10 y amplía DEC-015 con CANCELADO, solo desde EN_CAMINO.
+No autoriza fases posteriores, transferencias, envío múltiple, reportes o historial UI.
+Movement conserva FK a Student y a la versión académica del inicio, destino
+obligatorio y origen opcional. Atención directa no tiene origen ni envío.
+Una nueva revisión 0004 preserva las migraciones y datos anteriores.
+
+## DEC-041 — Integridad y acciones
+
+BEGIN IMMEDIATE serializa creación, transiciones y disponibilidad antes de leer.
+Un índice único parcial por estudiante protege EN_CAMINO/EN_ATENCION globalmente.
+Los CHECK protegen estados y coherencia de timestamps UTC generados por backend.
+Repetir una transición ya alcanzada es idempotente; crear de nuevo con un alumno
+activo devuelve conflicto, nunca duplica. No hay reintentos automáticos de escrituras.
+Finalizados/cancelados permanecen almacenados. La versión académica no se sustituye.
+
+## DEC-042 — Disponibilidad con activos
+
+Para pasar a NO_DISPONIBLE con activos, el backend devuelve un conflicto de
+confirmación con recuentos en camino/en atención. La petición confirmada incluye
+esos recuentos; bajo bloqueo de escritura se recalculan y, si cambiaron, se pide
+nueva confirmación. Ningún movimiento existente se altera: llegada, finalización
+y cancelación continúan. Solo se bloquean nuevas entradas.
+
+## DEC-043 — Operación, recuperación y privacidad
+
+La página mantiene grupos y paneles por destino. El contexto de departamento es
+una selección local explícita, sin usuario/perfil: registra origen para envíos y
+destino para atención directa. Sin contexto el envío conserva origen NULL.
+Búsqueda conserva cinco coincidencias y añade solo estado/destino activo.
+El estado del alumno seleccionado se recupera por API, también tras reconexión.
+movements_changed y departments_changed son avisos posteriores al commit;
+los clientes cancelan lecturas obsoletas y recuperan estado oficial sin optimismo.
+Timers se calculan desde timestamps y hora del servidor, sin escrituras periódicas.
+Confirmaciones accesibles para finalizar/cancelar/cierre con activos; éxitos inline.
+Pruebas y navegador usan exclusivamente datos sintéticos y bases desechables.
+
 Este documento registra todas las decisiones importantes del proyecto para mantener un criterio único durante el desarrollo.
 
 Las decisiones siguientes incorporan el saneamiento aprobado en Fase 0.1. Su registro no autoriza iniciar Fase 1 ni implementar las fases posteriores.
@@ -130,7 +170,7 @@ Conservar el historial operativo sin duplicar persistencia. WebSocket no necesit
 
 ## DEC-015 — Estados y atención directa
 
-**Decisión:** Los únicos estados de Movimiento son EN_CAMINO, EN_ATENCION y FINALIZADO. La atención directa comienza en EN_ATENCION, registra llegada/inicio y no tiene timestamp de envío ni tiempo de traslado. No se inventa un traslado de cero segundos.
+**Decisión:** Los estados son EN_CAMINO, EN_ATENCION, FINALIZADO y CANCELADO (DEC-040). La atención directa comienza en EN_ATENCION, registra llegada/inicio y no tiene timestamp de envío ni tiempo de traslado. No se inventa un traslado de cero segundos.
 
 **Motivo:** Representar estudiantes que llegan directamente sin crear estados ni recorridos ficticios.
 
@@ -148,7 +188,7 @@ Conservar el historial operativo sin duplicar persistencia. WebSocket no necesit
 
 ## DEC-018 — Concurrencia e integridad
 
-**Decisión:** La garantía de un movimiento activo combina validación del backend, transacción y restricción apropiada en la base de datos. La implementación concreta corresponde a Fase 5, con prueba concurrente desde esa fase y aplicación también a atención directa en Fase 8.
+**Decisión:** La garantía de un movimiento activo combina validación del backend, transacción y restricción apropiada en la base de datos. La implementación concreta corresponde a Fase 5, con prueba concurrente desde esa fase y aplicación también a atención directa en Fase 5 (DEC-040).
 
 **Motivo:** Una comprobación previa o un botón deshabilitado no protegen frente a solicitudes simultáneas.
 
@@ -172,7 +212,7 @@ Conservar el historial operativo sin duplicar persistencia. WebSocket no necesit
 
 ## DEC-022 — Desarrollo incremental verificable
 
-**Decisión:** Cada fase incluye la interfaz mínima, acceso LAN básico y recuperación por API que necesite para verificarse. Fase 9 consolida la interfaz, Fase 10 valida tiempo real completo, Fase 11 integra pruebas y Fase 12 valida integralmente la red local. No se pospone a esas fases la integridad necesaria en fases anteriores.
+**Decisión:** Cada fase incluye la interfaz mínima, acceso LAN básico y recuperación por API que necesite para verificarse. Fase 5 consolida interfaz y tiempo real completo (DEC-040), Fase 11 integra pruebas y Fase 12 valida integralmente la red local. No se pospone a esas fases la integridad necesaria en fases anteriores.
 
 **Motivo:** Evitar dependencias hacia funcionalidades todavía no implementadas, respetando el orden del roadmap.
 

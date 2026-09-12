@@ -104,6 +104,7 @@ No existe envío ni tiempo de traslado: no se inventa un traslado de cero segund
 - EN_CAMINO
 - EN_ATENCION
 - FINALIZADO
+- CANCELADO (solo desde EN_CAMINO, con confirmación).
 
 ---
 
@@ -244,3 +245,15 @@ nombre original, curso y paralelo; selección local reemplazable sin recargar.
 Sin documentos, contactos, ficha completa, edición, movimientos ni Fase 5.
 Interacción móvil prioritaria y el mismo componente en escritorio, con controles
 táctiles grandes, foco visible y navegación Tab/Enter/Escape.
+
+## Operación autorizada de Fase 5
+
+Flujo completo: envío EN_CAMINO, llegada EN_ATENCION, finalización FINALIZADO;
+cancelación EN_CAMINO → CANCELADO; atención directa sin origen ni envío.
+Historial persistido, FK a versión académica del inicio e índice único parcial
+por estudiante activo. BEGIN IMMEDIATE antes de leer para escribir.
+Disponibilidad con activos requiere confirmar recuentos autoritativos; si cambian,
+se vuelve a preguntar. No altera movimientos existentes. WebSocket avisa después
+del commit; API reconstruye paneles, selección y timers al abrir/recargar/reconectar.
+Sin documentos/contactos en vistas operativas. No transferencias o envío múltiple.
+Esquema, contratos y guía: [Movimientos de Fase 5](MOVEMENTS.md).

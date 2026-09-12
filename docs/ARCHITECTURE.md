@@ -111,7 +111,7 @@ Un estudiante puede tener muchos movimientos históricos, pero solo uno activo (
 
 La garantía combina validación del backend, transacción y una restricción apropiada de base de datos. Se implementa y prueba al crear movimientos, no durante el saneamiento documental.
 
-Los estados de movimiento son EN_CAMINO, EN_ATENCION y FINALIZADO. La disponibilidad DISPONIBLE / NO_DISPONIBLE es independiente. NO_DISPONIBLE bloquea nuevas entradas, incluidas atenciones directas, sin alterar movimientos existentes.
+Los estados de movimiento son EN_CAMINO, EN_ATENCION, FINALIZADO y CANCELADO. La disponibilidad DISPONIBLE / NO_DISPONIBLE es independiente. NO_DISPONIBLE bloquea nuevas entradas, incluidas atenciones directas, sin alterar movimientos existentes.
 
 Los timestamps oficiales los genera el backend. La atención directa empieza en EN_ATENCION y no tiene tiempo de traslado.
 
@@ -226,3 +226,15 @@ El DTO excluye documentos/contactos/procedencia; la API no refleja entradas inv�
 SearchQueryRedaction elimina los parámetros del endpoint en uvicorn.access, sin
 desactivar el registro general. No se registran consultas en los logs propios.
 La normalización de búsqueda es independiente de las reglas de identidad de 3B.
+
+## Operación autorizada de Fase 5
+
+Flujo completo: envío EN_CAMINO, llegada EN_ATENCION, finalización FINALIZADO;
+cancelación EN_CAMINO → CANCELADO; atención directa sin origen ni envío.
+Historial persistido, FK a versión académica del inicio e índice único parcial
+por estudiante activo. BEGIN IMMEDIATE antes de leer para escribir.
+Disponibilidad con activos requiere confirmar recuentos autoritativos; si cambian,
+se vuelve a preguntar. No altera movimientos existentes. WebSocket avisa después
+del commit; API reconstruye paneles, selección y timers al abrir/recargar/reconectar.
+Sin documentos/contactos en vistas operativas. No transferencias o envío múltiple.
+Esquema, contratos y guía: [Movimientos de Fase 5](MOVEMENTS.md).

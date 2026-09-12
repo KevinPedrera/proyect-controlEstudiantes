@@ -129,7 +129,7 @@ def test_minimal_dto_and_sql_do_not_load_family_or_document_data(client):
     finally:
         event.remove(client.app.state.engine, 'before_cursor_execute', executed)
     result = response.json()[0]
-    assert set(result) == {'student_id','first_name','middle_name','last_name','second_last_name','display_name','course','parallel'}
+    assert set(result) == {'student_id','first_name','middle_name','last_name','second_last_name','display_name','course','parallel','active_movement'}
     assert result['student_id'] == identifier
     assert not any(token in response.text for token in ['9999999999','0987654321','ContactoPrivado'])
     sql = '\n'.join(statements).lower()

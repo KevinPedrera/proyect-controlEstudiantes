@@ -11,11 +11,11 @@ Una fase NO debe comenzar hasta que la anterior funcione correctamente.
 Codex no debe adelantarse a fases posteriores ni implementar
 funcionalidades que no estén contempladas en el MVP.
 
-Estado actual: Fases 2 y 3A completadas y validadas manualmente. Fase 3B implementada, con alumnado operacional cargado. Fase 4 implementada, aprobada por QA y pendiente de validación manual. Fase 5 no iniciada.
+Estado actual: Fases 2 y 3A completadas y validadas manualmente. Fase 3B implementada, con alumnado operacional cargado. Fase 4 cerrada en Git. Fase 5 implementada; cierre técnico aprobado y validación manual pendiente.
 
 Las rutas documentales mencionadas en este archivo se expresan desde la raíz del proyecto.
 
-Cada fase incorpora la interfaz mínima incremental y las consultas de estado por API necesarias para sus criterios de finalización. Se habilita acceso LAN básico cuando la comprobación requiera otros dispositivos. Las fases 9, 10, 11 y 12 consolidan y validan lo ya construido; no posponen estas capacidades mínimas.
+Cada fase incorpora la interfaz mínima incremental y las consultas de estado por API necesarias para sus criterios de finalización. Se habilita acceso LAN básico cuando la comprobación requiera otros dispositivos. Las fases futuras 11 y 12 validan lo ya construido; no posponen estas capacidades mínimas.
 
 ---
 
@@ -220,257 +220,27 @@ del periodo activo, con normalización de tildes/mayúsculas y orden de término
 Componente reutilizable con debounce de 300 ms, cancelación de consultas antiguas,
 cinco resultados como máximo, selección local y «Cambiar estudiante». Sin migración.
 Revisar escritorio, tablet, teléfono vertical/estrecho, foco y targets táctiles.
-La validación manual en dispositivo físico sigue pendiente tras pruebas y QA técnico.
-No crear movimientos ni avanzar a Fase 5 automáticamente.
+Fase 4 fue cerrada por el usuario. Fase 5 tiene autorización posterior explícita.
 
 ---
 
-# FASE 5 — Crear movimiento
-
-## Objetivo
-
-Implementar la primera parte del flujo principal.
-
-Flujo:
-
-Buscar estudiante
-      ↓
-Seleccionar estudiante
-      ↓
-Seleccionar departamento
-      ↓
-Enviar
-      ↓
-EN CAMINO
-
-Al realizar el envío:
-
-1. El backend valida al estudiante.
-2. Comprueba que no tenga otro movimiento activo.
-3. Comprueba que el destino sea válido y acepte nuevas entradas.
-4. Crea el movimiento.
-5. Registra la hora de envío.
-6. Marca el movimiento como EN CAMINO.
-7. Confirma la transacción y después notifica el cambio mediante WebSocket.
-
-La hora oficial la genera el backend. Movimiento requiere destino, no origen. No crear tabla Evento. Incluir interfaz mínima de envío y consulta de movimientos activos por API para abrir, recargar o reconectar.
-
-## Regla obligatoria
-
-Un estudiante NO puede tener dos movimientos activos.
-
-Un departamento SÍ puede tener varios estudiantes.
-
-La garantía combina validación, transacción y restricción apropiada en SQLite. EN_CAMINO y EN_ATENCION son activos; dos movimientos al mismo destino también están prohibidos para el mismo estudiante.
-
-## Criterio de finalización
-
-Intentar enviar dos veces al mismo estudiante debe ser rechazado
-por el backend.
-
-Probar desde esta fase dos solicitudes realmente concurrentes desde clientes independientes para el mismo estudiante: solo un movimiento activo puede quedar confirmado en la base. Verificar además que distintos estudiantes puedan compartir destino. No esperar a Fase 11 para comprobar integridad.
-
----
-
-# FASE 6 — Llegada y tiempo de traslado
-
-## Objetivo
-
-Permitir que el departamento confirme la llegada del estudiante.
-
-Mientras esté:
-
-EN CAMINO
-
-la interfaz mostrará el tiempo transcurrido desde el envío.
-
-El departamento tendrá una acción:
-
-"Llegó"
-
-Al pulsarla:
-
-EN CAMINO
-     ↓
-EN ATENCIÓN
-
-Se registra la hora de llegada.
-
-El tiempo de traslado queda determinado por:
-
-hora_llegada - hora_envio
-
-## Importante
-
-No guardar un contador cada segundo en la base de datos.
-
-Guardar únicamente timestamps.
-
-Los genera el backend. Incluir consulta por API y reconstrucción del cronómetro tras recarga o reconexión, con una interfaz mínima de llegada. NO_DISPONIBLE no impide continuar la llegada de un movimiento ya activo.
-
-La interfaz calcula el contador visual.
-
-## Criterio de finalización
-
-El cronómetro debe continuar mostrando un tiempo correcto incluso
-si la página se recarga.
-
----
-
-# FASE 7 — Atención y finalización
-
-## Objetivo
-
-Controlar el tiempo que el estudiante permanece en el departamento.
-
-Cuando se confirma:
-
-"Llegó"
-
-comienza visualmente el tiempo de atención.
-
-El departamento podrá seleccionar:
-
-"Finalizar atención"
-
-Entonces:
-
-EN ATENCIÓN
-      ↓
-FINALIZADO
-
-Se registra la fecha y hora de finalización.
-
-El estudiante deja de tener un movimiento activo.
-
-## Criterio de finalización
-
-Después de finalizar la atención, el estudiante puede iniciar
-un nuevo movimiento.
-
-El movimiento anterior permanece almacenado como historial.
-
-Historial significa conservación en la base de datos, sin pantalla de historial. Los avisos de llegada y finalización se emiten después del commit. La finalización de movimientos activos puede continuar aunque el departamento esté NO_DISPONIBLE.
-
----
-
-# FASE 8 — Atención directa
-
-## Objetivo
-
-Permitir registrar estudiantes que llegan directamente a un
-departamento sin haber pasado por Inspección.
-
-Ejemplo:
-
-Un estudiante llega directamente al Departamento Médico.
-
-Flujo:
-
-Buscar estudiante
-      ↓
-Seleccionar
-      ↓
-Iniciar atención
-      ↓
-EN ATENCIÓN
-
-No existe tiempo de traslado para este movimiento.
-
-Se crea directamente en EN_ATENCION, sin timestamp de envío ni traslado ficticio de cero segundos. El destino debe aceptar nuevas entradas; NO_DISPONIBLE bloquea iniciar esta nueva atención.
-
-La hora de llegada/inicio se registra inmediatamente.
-
-## Criterio de finalización
-
-DECE, Médico u otro departamento puede registrar una atención
-sin necesitar que Inspección haya creado previamente un movimiento.
-
-La regla de un único movimiento activo continúa aplicándose.
-
-Reutilizar su protección transaccional y de base de datos. Probar concurrencia entre atención directa y envío para el mismo estudiante. El backend genera el timestamp de inicio y avisa después del commit.
-
----
-
-# FASE 9 — Panel general
-
-## Objetivo
-
-Construir la interfaz definitiva del MVP.
-
-Consolidar las vistas mínimas incorporadas en fases anteriores; esta no es la primera fase con interfaz funcional. El panel general es la página operativa del flujo, no un dashboard estadístico.
-
-Será UNA sola página.
-
-No existirán perfiles ni diferentes paneles para cada usuario
-durante el MVP.
-
-La información estará separada visualmente por áreas.
-
-Ejemplo conceptual:
-
-CONTROL ESTUDIANTIL
-
-INSPECCIÓN
---------------------------------
-Inspección General
-Inspección Primaria
-Inspección Bachillerato
-
-DECE
---------------------------------
-DECE Primaria
-DECE Secundaria/Bachillerato
-Psicopedagogía
-
-SALUD
---------------------------------
-Médico
-Odontología
-
-Cada área deberá mostrar claramente:
-
-- disponibilidad;
-- estudiantes en camino;
-- estudiantes en atención;
-- tiempos correspondientes.
-
-La prioridad será:
-
-1. Claridad.
-2. Rapidez.
-3. Facilidad de aprendizaje.
-4. Funcionamiento en PC y celular.
-
-No priorizar animaciones ni elementos decorativos.
-
----
-
-# FASE 10 — Tiempo real completo
-
-## Objetivo
-
-Validar conjuntamente todos los eventos WebSocket.
-
-Deben actualizarse sin recargar:
-
-- disponibilidad de departamentos;
-- nuevos movimientos;
-- estudiantes en camino;
-- llegada;
-- estudiantes en atención;
-- finalización.
-
-## Regla arquitectónica
-
-WebSocket NO es la fuente oficial de datos.
-
-SQLite/backend mantiene el estado real.
-
-Si un dispositivo pierde temporalmente la conexión, debe poder
-recuperar el estado correcto al reconectarse.
-
-Validar conjuntamente la recuperación por API ya incorporada a cada recurso al abrir, recargar o reconectar, y la coordinación entre consultas y avisos para evitar pérdida de cambios o respuestas desactualizadas. No implementar una tabla Evento ni reproducción persistente de mensajes.
+# FASE 5 — Flujo operativo completo de movimientos
+
+Autorizada después de Fase 4 cerrada en cc19ef7. Consolida las capacidades antes
+separadas en fases 5–10: envío, llegada, finalización, cancelación, atención directa,
+paneles por destino, cronómetros, disponibilidad con advertencia y tiempo real.
+Un solo activo global por estudiante, mediante transacción e índice SQLite.
+Historial persistido y referencia a la versión académica del inicio.
+Recuperación por API al abrir/recargar/reconectar; interfaz móvil y escritorio.
+Nueva migración 0004; preservar 0001–0003. No migrar la base institucional durante
+desarrollo. Pruebas sintéticas, navegador real y QA independiente de solo lectura.
+No transferencias, envío múltiple, reportes ni historial visual.
+Cierre técnico: 243 pruebas backend, 66 frontend, build y migración desechable correctos.
+QA independiente aprobado. Validación manual del usuario pendiente; base institucional
+sin migrar y sin movimientos reales. Contrato, evidencia y guía: [Movimientos](MOVEMENTS.md).
+
+Las antiguas fases 6–10 quedan absorbidas por esta autorización. Las siguientes
+etapas son futuras y no se inician automáticamente.
 
 ---
 

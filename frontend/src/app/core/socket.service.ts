@@ -3,7 +3,7 @@ import { inject, Injectable, InjectionToken, OnDestroy, signal } from '@angular/
 import { Subject } from 'rxjs';
 
 type SocketState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
-export type SocketEvent = 'connected' | 'disconnected' | 'departments_changed';
+export type SocketEvent = 'connected' | 'disconnected' | 'departments_changed' | 'movements_changed';
 
 export const SOCKET_FACTORY = new InjectionToken<(url: string) => WebSocket>('SOCKET_FACTORY', {
   providedIn: 'root',
@@ -53,8 +53,8 @@ export class SocketService implements OnDestroy {
         try {
           const message: unknown = JSON.parse(event.data);
           if (message && typeof message === 'object' && 'type' in message &&
-              message.type === 'departments_changed') {
-            this.notifications.next('departments_changed');
+              (message.type === 'departments_changed' || message.type === 'movements_changed')) {
+            this.notifications.next(message.type);
           }
         } catch { /* Los mensajes ajenos al contrato no alteran el estado. */ }
       });

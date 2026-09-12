@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.models import Department
 from app.schemas import Availability, DepartmentResponse
+from app.movements import MovementError, department_counts
 
 
 class DepartmentNotFound(Exception):
@@ -25,7 +26,7 @@ def list_departments(factory: sessionmaker) -> list[DepartmentResponse]:
 
 
 def set_availability(
-    factory: sessionmaker, department_id: int, availability: Availability
+    factory: sessionmaker, department_id: int, availability: Availability, confirmed_active_counts=None
 ) -> tuple[DepartmentResponse, bool]:
     with factory() as session:
         # Acquire the writer before reading: simultaneous requests cannot decide
@@ -37,6 +38,12 @@ def set_availability(
         if not department.active:
             raise DepartmentInactive
         changed = department.availability != availability
+        if changed and availability == 'NO_DISPONIBLE':
+            counts = department_counts(session, department_id)
+            if counts != confirmed_active_counts and (sum(counts.values()) or confirmed_active_counts is not None):
+                raise MovementError('CONFIRMAR_ACTIVOS',
+                    'Este departamento tiene estudiantes activos. Podrán continuar, pero no ingresarán nuevos estudiantes.',
+                    active_counts=counts)
         if changed:
             department.availability = availability
         result = DepartmentResponse.model_validate(department)

@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 from app.student_models import Institution, Student, StudentAcademicPlacement
+from app.movements import active_summary
 
 MAX_RESULTS = 5
 MAX_QUERY_LENGTH = 120
@@ -26,6 +27,7 @@ class StudentSearchResult(BaseModel):
     display_name: str
     course: str
     parallel: str
+    active_movement: dict | None = None
 
 
 def name_words(value: str) -> tuple[str, ...]:
@@ -81,4 +83,4 @@ def search_students(factory, query: str, limit: int) -> list[StudentSearchResult
                     yield (*rank, alphabetical, item['student_id']), dict(item, display_name=display_name)
 
         best = nsmallest(limit, matches(), key=lambda match: match[0])
-        return [StudentSearchResult(**item) for _, item in best]
+        return [StudentSearchResult(**item, active_movement=active_summary(session, item['student_id'])) for _, item in best]

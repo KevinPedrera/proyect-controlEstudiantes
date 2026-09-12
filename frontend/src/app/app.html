@@ -4,7 +4,7 @@
     <h1>Control Estudiantil</h1>
     <p>Encuentra al estudiante y consulta la disponibilidad de los departamentos.</p>
   </header>
-  <app-student-search />
+  <app-operations />
   <div class="connection">
     <dl aria-live="polite">
       <div><dt>Servidor</dt><dd data-testid="health">{{ healthLabel() }}</dd></div>
@@ -47,6 +47,7 @@
               @if (data.saveError()?.id === department.id) {
                 <p class="error" role="alert">{{ data.saveError()?.message }}</p>
               }
+              <app-movement-panel [departmentId]="department.id" />
             </article>
           }
         </section>
@@ -54,4 +55,5 @@
     </div>
   }
   <app-import-preview />
+  <app-dialog />
 </main>

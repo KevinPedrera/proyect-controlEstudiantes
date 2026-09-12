@@ -36,17 +36,23 @@ class ConnectionManager:
         self._connections.pop(websocket, None)
 
     async def departments_changed(self) -> None:
+        await self.broadcast('departments_changed')
+
+    async def movements_changed(self) -> None:
+        await self.broadcast('movements_changed')
+
+    async def broadcast(self, event: str) -> None:
         await asyncio.gather(*(
-            self._notify(websocket, lock)
+            self._notify(websocket, lock, event)
             for websocket, lock in list(self._connections.items())
         ))
 
-    async def _notify(self, websocket: WebSocket, lock: asyncio.Lock) -> None:
+    async def _notify(self, websocket: WebSocket, lock: asyncio.Lock, event: str = 'departments_changed') -> None:
         try:
             async with asyncio.timeout(2):
                 async with lock:
                     if websocket in self._connections:
-                        await websocket.send_json({"type": "departments_changed"})
+                        await websocket.send_json({"type": event})
         except Exception:
             self.disconnect(websocket)
             logger.warning("Se cerrará una conexión WebSocket cuyo aviso falló.")

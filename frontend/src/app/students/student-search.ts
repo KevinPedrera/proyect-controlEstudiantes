@@ -2,6 +2,7 @@ import { Component, DestroyRef, ElementRef, HostListener, ViewChild, inject, out
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, catchError, map, of, switchMap, tap, timer } from 'rxjs';
 import { StudentSearchResult, StudentSearchService } from './student-search.service';
+import { SocketService } from '../core/socket.service';
 
 type SearchState = 'initial' | 'short' | 'waiting' | 'loading' | 'results' | 'empty' | 'error';
 
@@ -36,6 +37,11 @@ export class StudentSearch {
   }
 
   constructor() {
+    inject(SocketService).events.pipe(takeUntilDestroyed()).subscribe(event => {
+      if (this.selected() || !this.query()) return;
+      if (event === 'disconnected') { this.queries.next(''); return; }
+      this.queries.next(this.query());
+    });
     // switchMap sees every keystroke immediately: it cancels an in-flight HTTP
     // request even while the next query is still waiting for its debounce.
     this.queries.pipe(

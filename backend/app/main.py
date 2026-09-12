@@ -17,6 +17,7 @@ from app.database import create_database_engine, create_session_factory
 from app.websocket import ConnectionManager, websocket_endpoint
 from app.student_search_api import router as search_router
 from app.search_logging import configure_search_log_privacy
+from app.movement_api import router as movement_router
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(api_router, prefix="/api")
     app.include_router(import_router, prefix="/api")
     app.include_router(search_router, prefix="/api")
+    app.include_router(movement_router, prefix="/api")
     app.add_middleware(ImportBodyLimit)
     app.add_api_websocket_route("/ws", websocket_endpoint)
     return app
